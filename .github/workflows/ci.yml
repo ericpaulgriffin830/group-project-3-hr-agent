@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  install-and-verify:
+    name: Install dependencies (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.1.0
+        with:
+          enable-cache: true
+
+      - name: Install dependencies from uv.lock
+        run: uv sync --locked
+
+      - name: Verify core libraries import
+        run: >
+          uv run python -c
+          "import chromadb, langchain, langgraph, sentence_transformers;
+          print('All core dependencies import successfully')"
