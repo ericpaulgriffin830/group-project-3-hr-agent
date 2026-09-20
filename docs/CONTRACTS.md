@@ -158,7 +158,7 @@ So Eric can write `.env.example` without guessing.
 | Variable | Example | Owner |
 |---|---|---|
 | `GROQ_API_KEY` | `gsk_...` | each member, rotated |
-| `GROQ_MODEL` | `llama-3.3-70b-versatile` | Chris |
+| `GROQ_MODEL` | `openai/gpt-oss-120b` | Chris |
 | `MCP_TRANSPORT` | `stdio` \| `streamable-http` | Chris |
 | `MCP_SERVER_URL` | `http://localhost:8765/mcp` | Chris |
 | `API_BASE_URL` | `https://hr-agent-api.onrender.com` | Eric |
@@ -168,6 +168,18 @@ So Eric can write `.env.example` without guessing.
 | `LOG_LEVEL` | `INFO` | Eric |
 
 Secrets come from the environment only. Never committed.
+
+**`GROQ_MODEL` changed 2026-09-20 — forced, not preference.** `llama-3.3-70b-versatile`
+is no longer served by Groq; it 404s with `model_not_found`. Verified against the live
+list with `uv run python -m app.llm --models`. `openai/gpt-oss-120b` is the largest model
+the free tier reaches that also tool-calls correctly (`gpt-oss-20b` and `qwen/qwen3.8-27b`
+both work too, and are faster). Re-check with `--models` before assuming any id still
+works — the lineup moves.
+
+**One consequence for the trace.** gpt-oss models return a `reasoning` field alongside
+`content`, carrying literal chain-of-thought. The brief forbids exposing it. `app/llm.py`
+returns **only** `content`, so nothing downstream can leak it — do not reach around the
+client to read the raw response.
 
 ---
 

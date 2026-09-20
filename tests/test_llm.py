@@ -231,3 +231,48 @@ def test_health_is_safe_with_no_key_configured():
     report = llm.health()
     assert report["configured"] is False
     assert report["keys_available"] == 0
+
+
+# ------------------------------------------------- chain-of-thought exclusion
+
+def test_reasoning_field_never_escapes_the_client(monkeypatch):
+    """The brief forbids exposing hidden chain-of-thought.
+
+    gpt-oss models return a `reasoning` field alongside `content`, carrying literal
+    step-by-step thinking. If it reached the trace or the answer it would fail an
+    explicit rubric item, so the client drops it -- once, here, for every caller.
+    """
+    monkeypatch.setenv("GROQ_API_KEY", "gsk_a")
+
+    class _MessageWithReasoning:
+        content = "You have 12.5 PTO days available."
+        reasoning = "The user asked about PTO. Let me check the balance and think..."
+
+    class _Resp:
+        choices = [type("C", (), {"message": _MessageWithReasoning()})()]
+        usage = _Usage()
+
+    class _FakeGroq:
+        def __init__(self, api_key):
+            self.chat = type("C", (), {"completions": type(
+                "X", (), {"create": lambda self, **kw: _Resp()})()})()
+
+    monkeypatch.setattr(llm, "Groq", _FakeGroq)
+    result = llm.complete("how much pto")
+
+    assert result.text == "You have 12.5 PTO days available."
+    blob = repr(result)
+    assert "reasoning" not in blob
+    assert "Let me check" not in blob
+    assert not hasattr(result, "reasoning")
+
+
+def test_dotenv_is_loaded_on_package_import():
+    """Python does not read .env and neither does `uv run`.
+
+    Without app/__init__.py loading it, every os.getenv() returns None no matter
+    what the file says -- which presents as a missing key and sends you hunting in
+    the wrong place. This is how that regression gets caught.
+    """
+    import app
+    assert hasattr(app, "load_dotenv")

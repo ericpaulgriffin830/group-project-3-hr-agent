@@ -2718,6 +2718,7 @@ dependencies = [
     { name = "langchain" },
     { name = "langgraph" },
     { name = "mcp" },
+    { name = "python-dotenv" },
     { name = "sentence-transformers" },
 ]
 
@@ -2734,6 +2735,7 @@ requires-dist = [
     { name = "langchain", specifier = ">=1.4.2" },
     { name = "langgraph", specifier = ">=1.2.11" },
     { name = "mcp", specifier = ">=2.2.0" },
+    { name = "python-dotenv", specifier = ">=1.2.3" },
     { name = "sentence-transformers", specifier = ">=6.1.0" },
 ]
 

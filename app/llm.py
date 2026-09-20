@@ -27,7 +27,10 @@ from typing import Iterable
 from groq import Groq
 from groq import APIConnectionError, APIStatusError, RateLimitError
 
-DEFAULT_MODEL = "llama-3.3-70b-versatile"
+# Verified against `--models` on 2026-09-20. llama-3.3-70b-versatile, which
+# CONTRACTS.md pinned, is NO LONGER SERVED by Groq -- it 404s. gpt-oss-120b is the
+# largest model the free tier reaches that also tool-calls correctly.
+DEFAULT_MODEL = "openai/gpt-oss-120b"
 SEED = 20260920
 
 MAX_ATTEMPTS = 6
@@ -88,7 +91,7 @@ def complete(
     *,
     system: str | None = None,
     model: str | None = None,
-    max_tokens: int = 1024,
+    max_tokens: int = 2048,
     temperature: float = 0.0,
 ) -> Completion:
     """One deterministic chat completion, retrying across keys on rate limits.
@@ -141,9 +144,15 @@ def complete(
             time.sleep(_backoff(attempt))
             continue
 
+        message = response.choices[0].message
         usage = response.usage
+        # ONLY message.content ever leaves this function. gpt-oss models also return
+        # a `reasoning` field carrying literal chain-of-thought, and the brief forbids
+        # exposing it -- "Do not expose hidden chain-of-thought; provide concise
+        # operational traces instead." Reading it into the trace or the answer would
+        # fail an explicit rubric item, so it is dropped here, once, for everyone.
         return Completion(
-            text=response.choices[0].message.content or "",
+            text=message.content or "",
             model=chosen,
             latency_ms=int((time.monotonic() - started) * 1000),
             prompt_tokens=getattr(usage, "prompt_tokens", 0),
