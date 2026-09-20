@@ -31,8 +31,10 @@ PTO = {
                "blackout_dates": ["2026-12-22", "2026-12-23"], "accrual_rate": 1.5},
     "E-1077": {"accrued_days": 4.0, "used_days": 0.0, "available_days": 4.0,
                "blackout_dates": [], "accrual_rate": 0.5},
-    "E-1099": {"accrued_days": 0.0, "used_days": 0.0, "available_days": 0.0,
-               "blackout_dates": [], "accrual_rate": 0.0},
+    # E-1099 (contractor) deliberately has NO entry. A zero-filled record would have
+    # the agent answer "0 days available", which implies he could accrue some; the
+    # true answer is that contractors do not accrue at all. The absence is what makes
+    # check_pto_balance's no_pto_record branch reachable.
 }
 
 BENEFITS = {

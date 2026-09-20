@@ -217,8 +217,11 @@ def create_mock_hr_ticket(employee_id: str, category: str, summary: str,
         return _err("invalid_confirm_token",
                     "Confirmation token does not match this request. Nothing was created.")
 
-    return {"ticket_id": f"HR-{abs(hash(expected)) % 90000 + 10000}",
-            "status": "created", "created_at": _now()}
+    # Derived from the confirm token's digest, NOT hash() -- str hashing is salted
+    # per process (PYTHONHASHSEED), so hash() would hand the same request a different
+    # ticket id on every run and make evaluation reruns incomparable.
+    ticket_id = f"HR-{int(expected, 16) % 90000 + 10000}"
+    return {"ticket_id": ticket_id, "status": "created", "created_at": _now()}
 
 
 @mcp.tool()
