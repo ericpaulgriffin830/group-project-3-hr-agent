@@ -198,3 +198,49 @@ if __name__ == "__main__":
             print(model_id)
     else:
         print(json.dumps(health(), indent=2))
+
+
+# --------------------------------------------------------------- LangChain seam
+
+GROQ_OPENAI_BASE_URL = "https://api.groq.com/openai/v1"
+
+
+def chat_model(*, temperature: float = 0.0, **kwargs):
+    """A LangChain chat model for the LangGraph orchestrator.
+
+    Groq serves an OpenAI-compatible /v1, so ChatOpenAI talks to it directly. That
+    matters because the two official adapters are both unusable here:
+    `langchain-groq` pins groq<1.0 (we are on 1.x) and `langchain-mcp-adapters`
+    raises ImportError against MCP 2.x. This route works and keeps us on the
+    framework.
+
+    It lives beside `complete()` on purpose. There are two clients -- this one for
+    the graph, the raw one for Rob's synthesize() -- but only ONE definition of the
+    model and seed, imported from here by both. Two places setting temperature
+    independently is how an evaluation stops being reproducible.
+
+    Key rotation is `with_fallbacks`: one client per key, LangChain moves to the
+    next when one fails. Coarser than complete()'s 429-specific retry -- it falls
+    back on any error -- but it is the idiomatic hook and it covers the failure that
+    matters, a throttled key mid-demo.
+    """
+    from langchain_openai import ChatOpenAI
+
+    keys = _keys()
+    if not keys:
+        raise LLMNotConfigured(
+            "No Groq API key. Copy .env.example to .env and set GROQ_API_KEY."
+        )
+
+    def build(key: str):
+        return ChatOpenAI(
+            model=_model(),
+            api_key=key,
+            base_url=GROQ_OPENAI_BASE_URL,
+            temperature=temperature,
+            seed=SEED,
+            **kwargs,
+        )
+
+    primary, *rest = [build(k) for k in keys]
+    return primary.with_fallbacks(rest) if rest else primary
