@@ -83,6 +83,26 @@ print(f"linux download: {sum(best.values())/1e9:.2f} GB   torch/cuda: {sum(heavy
 PY
 ```
 
+### Observed on Render, 2026-09-20 17:26 CDT
+
+A real deploy was run against a free Web Service. Two things were settled:
+
+**The build is NOT the problem.** Render detected uv, ran the sync against this exact
+lock, and reported `Build successful` before uploading. So 3.46 GB installs fine at
+build time — do not argue the swap on build size, because the log disproves it.
+
+**The runtime ceiling is untested.** The service never started, so nothing was ever
+resident in the 512 MB instance. The deploy died at
+`Exited with status 127` / `No open ports detected` for unrelated reasons: the Start
+Command field held the service name rather than a command, and the repo has no web app
+binding `$PORT` regardless.
+
+So the honest case for `fastembed` is **runtime memory, not build size**. `torch` alone
+carries a multi-hundred-MB import footprint before a model is loaded, against a 512 MB
+ceiling shared with FastAPI, Chroma and the embedding model. That remains a real
+blocker — but it is a prediction until something actually boots, and the first service
+that starts successfully is the test. Report what that shows.
+
 **This makes `sentence-transformers` → `fastembed` a deployment blocker, not a
 cleanup item.** `Group_Assignment.md` currently files it under "Fixes" beside a README
 typo. It belongs on the critical path — Rob owns the swap and the re-lock.
@@ -134,3 +154,14 @@ A Render web service needs a process that **binds `$PORT` and keeps listening** 
 script that prints and exits fails the health check even when the build succeeds. For
 the API that means something like
 `uvicorn app.api:app --host 0.0.0.0 --port $PORT`.
+
+Two traps already hit on a real deploy:
+
+- **The Start Command is a shell command, not a label.** A service named
+  "Quantic AI HR RAG" with that string in the Start Command produced
+  `bash: line 1: Quantic: command not found` and `Exited with status 127`.
+- **Bind `0.0.0.0` and Render's `$PORT`**, never `127.0.0.1` or a hard-coded port, or
+  the port scan finds nothing and the deploy fails even though the process is running.
+
+Until `app/api.py` exists there is nothing to deploy, and a service pointed at the repo
+will fail on every attempt. Suspend it rather than leaving it retrying.
