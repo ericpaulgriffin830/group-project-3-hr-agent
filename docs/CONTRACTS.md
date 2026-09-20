@@ -14,7 +14,16 @@ Nobody waits.
 Eight tools. The brief requires ≥5, with ≥1 using the RAG index and ≥1 using mock
 structured data or performing a mock operation.
 
-**Owner:** Chris (`mcp/server.py`, `mcp/schemas.py`)
+**Owner:** Chris (`mcp_server/server.py`, `mcp_server/schemas.py`)
+
+> **Why `mcp_server/` and not `mcp/`.** A local package named `mcp/` shadows the
+> installed MCP SDK — `import mcp` then finds our directory and every
+> `from mcp.server...` fails. The directory name is load-bearing, not cosmetic.
+>
+> `mcp_server/schemas.py` is the **executable copy of this contract**, and
+> `tests/test_schemas.py` validates what the real tools return against it, so the
+> prose below and the server cannot drift apart silently. Note the SDK class is
+> `MCPServer`; `FastMCP` was its name before SDK 2.x.
 **Backed by:** Rob for the two RAG tools; Chris for the rest.
 
 ### 1. `search_policy_documents` — RAG
@@ -22,7 +31,7 @@ structured data or performing a mock operation.
 in : {"query": str, "k": int = 5, "doc_filter": [str] | null}
 out: {"chunks": [{"doc_id": str, "title": str, "section": str,
                   "snippet": str, "score": float}],
-      "retrieval_mode": "hybrid" | "vector_only" | "keyword_only"}
+      "retrieval_mode": "hybrid" | "vector_only" | "keyword_only" | "fixture"}
 ```
 
 ### 2. `get_policy_section` — RAG
@@ -78,6 +87,11 @@ in : {"employee_id": str, "recipient_role": str, "intent": str,
 out: {"draft": {"to": str, "subject": str, "body": str}, "sent": false}
 gate: same as #7. NOTHING IS EVER SENT.
 ```
+
+**`retrieval_mode: "fixture"`** is what the fixture-phase server returns today. It is
+in the enum deliberately rather than dressed up as `keyword_only` — a caller reading a
+trace should be able to tell canned data from a real index at a glance. It disappears
+when Rob's retrieval lands.
 
 **Error convention — every tool.** Never raise to the agent. Return
 `{"error": "<machine_code>", "message": "<human text>"}` so the orchestrator can
