@@ -1,0 +1,8 @@
+claim_id,employee_id,date,category,description,amount_usd,status,policy_section_ref,notes
+EXP-3001,E1006,2026-08-04,home_office,Ergonomic chair (initial home office stipend),349.0,approved,EXP-2,
+EXP-3002,E1009,2026-03-10,home_office,Standing desk (initial home office stipend),480.0,approved,EXP-2,
+EXP-3003,E1005,2026-07-22,travel,"Round-trip flight + hotel for client onsite, Chicago",612.4,approved,EXP-4,
+EXP-3004,E1004,2026-09-02,software,Personal license for a diagramming tool ($15/month),15.0,approved,EXP-3,
+EXP-3005,E1007,2026-05-18,equipment,Personal laptop purchase (expected reimbursement),1899.0,denied,EXP-3,"Core computing equipment is issued by IT (EQUIPMENT), not reimbursed; employee directed to submit an equipment request instead."
+EXP-3006,E1006,2026-04-14,meals,"Client dinner, 3 attendees, pre-approved",210.75,approved,EXP-5,
+EXP-3007,E1008,2026-02-01,home_office,Second monitor (over annual $250 stipend cap),310.0,denied,EXP-2,"Exceeds the $250/year ongoing home office stipend cap; $250 approved, remainder denied."

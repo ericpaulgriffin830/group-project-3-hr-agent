@@ -1,0 +1,30 @@
+[
+  {
+    "office_id": "OFC-CHI",
+    "city": "Chicago",
+    "state": "IL",
+    "country": "US",
+    "office_type": "HQ"
+  },
+  {
+    "office_id": "OFC-AUS",
+    "city": "Austin",
+    "state": "TX",
+    "country": "US",
+    "office_type": "branch"
+  },
+  {
+    "office_id": "OFC-DEN",
+    "city": "Denver",
+    "state": "CO",
+    "country": "US",
+    "office_type": "branch"
+  },
+  {
+    "office_id": "OFC-RAL",
+    "city": "Raleigh",
+    "state": "NC",
+    "country": "US",
+    "office_type": "branch"
+  }
+]

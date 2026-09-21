@@ -1,0 +1,596 @@
+{
+  "corpus_name": "Northbridge Analytics Policy Corpus",
+  "documents": [
+    {
+      "doc_id": "HANDBOOK-OVERVIEW",
+      "title": "Northbridge Analytics Employee Handbook \u2014 Overview",
+      "filename": "01-employee-handbook-overview.md",
+      "format": "markdown",
+      "version": "3.2",
+      "effective_date": "2026-01-05",
+      "owner": "People Operations",
+      "applies_to": "All employees and contractors",
+      "word_count": 1841,
+      "approx_pages": 3.7,
+      "sections": [
+        {
+          "section_id": "HANDBOOK-1",
+          "heading": "Purpose and Scope"
+        },
+        {
+          "section_id": "HANDBOOK-2",
+          "heading": "Company Overview"
+        },
+        {
+          "section_id": "HANDBOOK-3",
+          "heading": "How to Use This Handbook"
+        },
+        {
+          "section_id": "HANDBOOK-4",
+          "heading": "Document Index and Ownership"
+        },
+        {
+          "section_id": "HANDBOOK-5",
+          "heading": "Policy Review and Updates"
+        },
+        {
+          "section_id": "HANDBOOK-6",
+          "heading": "Definitions"
+        },
+        {
+          "section_id": "HANDBOOK-7",
+          "heading": "Contact and Feedback"
+        }
+      ]
+    },
+    {
+      "doc_id": "PTO-HOLIDAYS",
+      "title": "PTO and Holidays Policy",
+      "filename": "02-pto-and-holidays-policy.md",
+      "format": "markdown",
+      "version": "4.0",
+      "effective_date": "2026-01-05",
+      "owner": "People Operations",
+      "applies_to": "Full-time and part-time employees; contractors are not eligible",
+      "word_count": 1641,
+      "approx_pages": 3.3,
+      "sections": [
+        {
+          "section_id": "PTO-1",
+          "heading": "Purpose and Eligibility"
+        },
+        {
+          "section_id": "PTO-2",
+          "heading": "Accrual Rates by Employment Type"
+        },
+        {
+          "section_id": "PTO-3",
+          "heading": "Requesting and Approving PTO"
+        },
+        {
+          "section_id": "PTO-4",
+          "heading": "Carryover and Payout Rules"
+        },
+        {
+          "section_id": "PTO-5",
+          "heading": "Observed Holidays"
+        },
+        {
+          "section_id": "PTO-6",
+          "heading": "Floating Holidays"
+        },
+        {
+          "section_id": "PTO-7",
+          "heading": "Unplanned Absences and Emergencies"
+        },
+        {
+          "section_id": "PTO-8",
+          "heading": "Interaction with Leave of Absence"
+        },
+        {
+          "section_id": "PTO-9",
+          "heading": "Frequently Encountered Situations"
+        }
+      ]
+    },
+    {
+      "doc_id": "REMOTE-WORK",
+      "title": "Work Arrangement Categories",
+      "filename": "03-remote-work-policy.html",
+      "format": "html",
+      "version": "4.1",
+      "effective_date": "2026-01-05",
+      "owner": "People Operations / Legal",
+      "applies_to": null,
+      "word_count": 1874,
+      "approx_pages": 3.7,
+      "sections": [
+        {
+          "section_id": "RW-1",
+          "heading": "Work Arrangement Categories"
+        },
+        {
+          "section_id": "RW-2",
+          "heading": "Approved Remote Work States"
+        },
+        {
+          "section_id": "RW-3",
+          "heading": "Temporary Remote Work From a Non-Home Location (Domestic)"
+        },
+        {
+          "section_id": "RW-4",
+          "heading": "International Remote Work"
+        },
+        {
+          "section_id": "RW-5",
+          "heading": "Security Requirements for Remote Work"
+        },
+        {
+          "section_id": "RW-6",
+          "heading": "Approval Process and Roles"
+        },
+        {
+          "section_id": "RW-7",
+          "heading": "Equipment and Expense Considerations"
+        },
+        {
+          "section_id": "RW-8",
+          "heading": "Non-Compliance Consequences"
+        },
+        {
+          "section_id": "RW-9",
+          "heading": "Frequently Asked Questions"
+        }
+      ]
+    },
+    {
+      "doc_id": "TAX-LOCATION",
+      "title": "Tax and Work Location Policy",
+      "filename": "04-tax-and-work-location-policy.md",
+      "format": "markdown",
+      "version": "2.3",
+      "effective_date": "2026-01-05",
+      "owner": "Finance / Legal",
+      "applies_to": "All employees",
+      "word_count": 1589,
+      "approx_pages": 3.2,
+      "sections": [
+        {
+          "section_id": "TAX-1",
+          "heading": "Why Work Location Matters"
+        },
+        {
+          "section_id": "TAX-2",
+          "heading": "State Payroll Tax Registration"
+        },
+        {
+          "section_id": "TAX-3",
+          "heading": "Nexus and Business Registration Risk"
+        },
+        {
+          "section_id": "TAX-4",
+          "heading": "Employee Reporting Obligations"
+        },
+        {
+          "section_id": "TAX-5",
+          "heading": "International Work Location and Tax Treaties"
+        },
+        {
+          "section_id": "TAX-6",
+          "heading": "Consequences of Unreported Location Changes"
+        },
+        {
+          "section_id": "TAX-7",
+          "heading": "Illustrative Examples"
+        }
+      ]
+    },
+    {
+      "doc_id": "EXPENSE",
+      "title": "Expense and Reimbursement Policy",
+      "filename": "05-expense-and-reimbursement-policy.md",
+      "format": "markdown",
+      "version": "3.1",
+      "effective_date": "2026-01-05",
+      "owner": "Finance",
+      "applies_to": "All employees",
+      "word_count": 1246,
+      "approx_pages": 2.5,
+      "sections": [
+        {
+          "section_id": "EXP-1",
+          "heading": "General Principles"
+        },
+        {
+          "section_id": "EXP-2",
+          "heading": "Home Office Equipment and Furniture"
+        },
+        {
+          "section_id": "EXP-3",
+          "heading": "Technology and Software"
+        },
+        {
+          "section_id": "EXP-4",
+          "heading": "Business Travel"
+        },
+        {
+          "section_id": "EXP-5",
+          "heading": "Meals and Entertainment"
+        },
+        {
+          "section_id": "EXP-6",
+          "heading": "Submission and Approval Process"
+        },
+        {
+          "section_id": "EXP-7",
+          "heading": "Non-Reimbursable Expenses"
+        },
+        {
+          "section_id": "EXP-8",
+          "heading": "Recordkeeping and Audit"
+        },
+        {
+          "section_id": "EXP-9",
+          "heading": "Illustrative Examples"
+        }
+      ]
+    },
+    {
+      "doc_id": "EQUIPMENT",
+      "title": "Standard Issue Equipment",
+      "filename": "06-equipment-and-technology-policy.html",
+      "format": "html",
+      "version": "2.5",
+      "effective_date": "2026-01-05",
+      "owner": "IT",
+      "applies_to": null,
+      "word_count": 1008,
+      "approx_pages": 2.0,
+      "sections": [
+        {
+          "section_id": "EQ-1",
+          "heading": "Standard Issue Equipment"
+        },
+        {
+          "section_id": "EQ-2",
+          "heading": "Requesting Additional or Replacement Equipment"
+        },
+        {
+          "section_id": "EQ-3",
+          "heading": "Ownership and Return of Equipment"
+        },
+        {
+          "section_id": "EQ-4",
+          "heading": "Personal Device Use (BYOD)"
+        },
+        {
+          "section_id": "EQ-5",
+          "heading": "Software Installation and Licensing"
+        },
+        {
+          "section_id": "EQ-6",
+          "heading": "Loss, Theft, and Damage"
+        },
+        {
+          "section_id": "EQ-7",
+          "heading": "Equipment for Approved Temporary and International Remote Work"
+        },
+        {
+          "section_id": "EQ-8",
+          "heading": "Equipment Refresh Cycle"
+        },
+        {
+          "section_id": "EQ-9",
+          "heading": "Shared and Loaner Equipment Pool"
+        }
+      ]
+    },
+    {
+      "doc_id": "INFOSEC",
+      "title": "Information Security Policy",
+      "filename": "07-information-security-policy.md",
+      "format": "markdown",
+      "version": "5.0",
+      "effective_date": "2026-01-05",
+      "owner": "IT Security",
+      "applies_to": "All employees and contractors",
+      "word_count": 1363,
+      "approx_pages": 2.7,
+      "sections": [
+        {
+          "section_id": "SEC-1",
+          "heading": "Purpose and Scope"
+        },
+        {
+          "section_id": "SEC-2",
+          "heading": "Acceptable Use"
+        },
+        {
+          "section_id": "SEC-3",
+          "heading": "Data Classification"
+        },
+        {
+          "section_id": "SEC-4",
+          "heading": "Remote and Travel Security Requirements"
+        },
+        {
+          "section_id": "SEC-5",
+          "heading": "Access Control and Authentication"
+        },
+        {
+          "section_id": "SEC-6",
+          "heading": "Incident Reporting"
+        },
+        {
+          "section_id": "SEC-7",
+          "heading": "Third-Party and AI Tool Use"
+        },
+        {
+          "section_id": "SEC-8",
+          "heading": "Consequences of Violations"
+        },
+        {
+          "section_id": "SEC-9",
+          "heading": "Password and Authentication Standards"
+        },
+        {
+          "section_id": "SEC-10",
+          "heading": "Relationship to Remote Work and Tax Location Policies"
+        },
+        {
+          "section_id": "SEC-11",
+          "heading": "Frequently Asked Questions"
+        }
+      ]
+    },
+    {
+      "doc_id": "BENEFITS",
+      "title": "Benefits Guide",
+      "filename": "08-benefits-guide.md",
+      "format": "markdown",
+      "version": "3.4",
+      "effective_date": "2026-01-05",
+      "owner": "People Operations",
+      "applies_to": "Full-time employees (see BEN-7 for part-time and contractors)",
+      "word_count": 1147,
+      "approx_pages": 2.3,
+      "sections": [
+        {
+          "section_id": "BEN-1",
+          "heading": "Eligibility Overview"
+        },
+        {
+          "section_id": "BEN-2",
+          "heading": "Medical, Dental, and Vision Plans"
+        },
+        {
+          "section_id": "BEN-3",
+          "heading": "Waiting Period and Effective Dates"
+        },
+        {
+          "section_id": "BEN-4",
+          "heading": "Retirement Plan and Employer Match"
+        },
+        {
+          "section_id": "BEN-5",
+          "heading": "Flexible Spending and Health Savings Accounts"
+        },
+        {
+          "section_id": "BEN-6",
+          "heading": "Life and Disability Insurance"
+        },
+        {
+          "section_id": "BEN-7",
+          "heading": "Part-Time and Contractor Benefits"
+        },
+        {
+          "section_id": "BEN-8",
+          "heading": "Qualifying Life Events and Open Enrollment"
+        },
+        {
+          "section_id": "BEN-9",
+          "heading": "Frequently Encountered Situations"
+        }
+      ]
+    },
+    {
+      "doc_id": "LEAVE",
+      "title": "Types of Leave",
+      "filename": "09-leave-of-absence-policy.txt",
+      "format": "txt",
+      "version": "3.0",
+      "effective_date": "2026-01-05",
+      "owner": "People Operations / Legal",
+      "applies_to": "All employees; eligibility for specific leave types varies as noted below",
+      "word_count": 1270,
+      "approx_pages": 2.5,
+      "sections": [
+        {
+          "section_id": "LEAVE-1",
+          "heading": "Types of Leave"
+        },
+        {
+          "section_id": "LEAVE-2",
+          "heading": "Family and Medical Leave (FMLA-aligned)"
+        },
+        {
+          "section_id": "LEAVE-3",
+          "heading": "Parental Leave"
+        },
+        {
+          "section_id": "LEAVE-4",
+          "heading": "Medical Leave (Non-FMLA)"
+        },
+        {
+          "section_id": "LEAVE-5",
+          "heading": "Bereavement Leave"
+        },
+        {
+          "section_id": "LEAVE-6",
+          "heading": "Jury Duty and Civic Leave"
+        },
+        {
+          "section_id": "LEAVE-7",
+          "heading": "Requesting Leave and Documentation"
+        },
+        {
+          "section_id": "LEAVE-8",
+          "heading": "Job Protection and Return to Work"
+        },
+        {
+          "section_id": "LEAVE-9",
+          "heading": "Interaction with Other Policies"
+        }
+      ]
+    },
+    {
+      "doc_id": "ONBOARDING",
+      "title": "Onboarding Checklist and Process",
+      "filename": "10-onboarding-checklist-and-process.md",
+      "format": "markdown",
+      "version": "2.1",
+      "effective_date": "2026-01-05",
+      "owner": "People Operations",
+      "applies_to": "New hires and their managers",
+      "word_count": 1156,
+      "approx_pages": 2.3,
+      "sections": [
+        {
+          "section_id": "ONB-1",
+          "heading": "Pre-Start Preparation"
+        },
+        {
+          "section_id": "ONB-2",
+          "heading": "Day One Checklist"
+        },
+        {
+          "section_id": "ONB-3",
+          "heading": "First Week Checklist"
+        },
+        {
+          "section_id": "ONB-4",
+          "heading": "30-60-90 Day Milestones"
+        },
+        {
+          "section_id": "ONB-5",
+          "heading": "Manager Responsibilities"
+        },
+        {
+          "section_id": "ONB-6",
+          "heading": "New Hire Paperwork and Compliance"
+        },
+        {
+          "section_id": "ONB-7",
+          "heading": "Onboarding for Remote and Out-of-State New Hires"
+        },
+        {
+          "section_id": "ONB-8",
+          "heading": "Onboarding Buddy Program"
+        },
+        {
+          "section_id": "ONB-9",
+          "heading": "Common New Hire Questions"
+        }
+      ]
+    },
+    {
+      "doc_id": "CONDUCT",
+      "title": "Workplace Conduct and Anti-Harassment Policy",
+      "filename": "11-workplace-conduct-and-anti-harassment-policy.md",
+      "format": "markdown",
+      "version": "4.2",
+      "effective_date": "2026-01-05",
+      "owner": "People Operations / Legal",
+      "applies_to": "All employees, contractors, and interns",
+      "word_count": 1140,
+      "approx_pages": 2.3,
+      "sections": [
+        {
+          "section_id": "CONDUCT-1",
+          "heading": "Code of Conduct Overview"
+        },
+        {
+          "section_id": "CONDUCT-2",
+          "heading": "Anti-Harassment and Anti-Discrimination"
+        },
+        {
+          "section_id": "CONDUCT-3",
+          "heading": "Reporting Procedures"
+        },
+        {
+          "section_id": "CONDUCT-4",
+          "heading": "Investigation Process"
+        },
+        {
+          "section_id": "CONDUCT-5",
+          "heading": "Retaliation Prohibition"
+        },
+        {
+          "section_id": "CONDUCT-6",
+          "heading": "Conflicts of Interest"
+        },
+        {
+          "section_id": "CONDUCT-7",
+          "heading": "Workplace Violence Prevention"
+        },
+        {
+          "section_id": "CONDUCT-8",
+          "heading": "Illustrative Examples"
+        }
+      ]
+    },
+    {
+      "doc_id": "HR-OPS",
+      "title": "HR Service Model",
+      "filename": "12-hr-operations-and-escalation-procedures.html",
+      "format": "html",
+      "version": "1.8",
+      "effective_date": "2026-01-05",
+      "owner": "People Operations",
+      "applies_to": null,
+      "word_count": 983,
+      "approx_pages": 2.0,
+      "sections": [
+        {
+          "section_id": "HR-OPS-1",
+          "heading": "HR Service Model"
+        },
+        {
+          "section_id": "HR-OPS-2",
+          "heading": "Ticket Categories and SLAs"
+        },
+        {
+          "section_id": "HR-OPS-3",
+          "heading": "Escalation Criteria"
+        },
+        {
+          "section_id": "HR-OPS-4",
+          "heading": "Confidentiality of HR Records"
+        },
+        {
+          "section_id": "HR-OPS-5",
+          "heading": "Manager Escalation Responsibilities"
+        },
+        {
+          "section_id": "HR-OPS-6",
+          "heading": "Emergency Contacts"
+        },
+        {
+          "section_id": "HR-OPS-7",
+          "heading": "Ticket Lifecycle and Statuses"
+        },
+        {
+          "section_id": "HR-OPS-8",
+          "heading": "Roles Within People Operations"
+        },
+        {
+          "section_id": "HR-OPS-9",
+          "heading": "Metrics and Continuous Improvement"
+        }
+      ]
+    }
+  ],
+  "total_documents": 12,
+  "total_word_count": 16258,
+  "approx_total_pages": 32.5
+}
