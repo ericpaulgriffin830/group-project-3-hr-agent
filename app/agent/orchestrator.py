@@ -26,8 +26,9 @@ from typing import Any, Literal, TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
-from app.agent import tools as tool_bridge
+from app.agent import guardrails, tools as tool_bridge
 from app.agent.mcp_client import MCPClient, ToolCall
+from app.agent.trace import Trace
 
 MAX_TOOL_STEPS = 6
 
@@ -87,6 +88,7 @@ class AgentState(TypedDict, total=False):
     steps: int
 
     answer: str
+    action_refusal: str | None
     citations: list[dict]
     answer_basis: str
     requires_confirmation: bool
@@ -95,8 +97,10 @@ class AgentState(TypedDict, total=False):
 
 
 def _trace(state: AgentState, kind: str, **fields: Any) -> list[dict]:
-    steps = state.get("trace", [])
-    return steps + [{"step": len(steps) + 1, "type": kind, **fields}]
+    """Append one step via Trace, which rejects reasoning-shaped fields."""
+    trace = Trace(steps=list(state.get("trace", [])))
+    trace.add(kind, **fields)
+    return trace.as_list()
 
 
 def _synthesize(question: str, evidence: list[dict], tool_results: list[dict],
@@ -147,12 +151,21 @@ def build_graph(client: MCPClient, chat_model: Any):
         word = (result.content or "").strip().lower().split()[:1]
         intent: Intent = word[0] if word and word[0] in (
             "policy_qa", "workflow", "clarify", "refuse") else "policy_qa"
+        escalation = guardrails.classify_escalation(state["question"])
+        trace = _trace(state, "intent", result_summary=intent, status="ok")
+        if escalation:
+            t = Trace(steps=trace)
+            t.add("escalation", result_summary=f"{escalation.route}: {escalation.reason}",
+                  status="ok", route=escalation.route)
+            trace = t.as_list()
+
         return {
             "intent": intent,
+            "escalation": escalation.as_dict() if escalation else None,
             "steps": 0,
             "messages": [{"role": "system", "content": AGENT_SYSTEM},
                          {"role": "user", "content": state["question"]}],
-            "trace": _trace(state, "intent", result_summary=intent, status="ok"),
+            "trace": trace,
         }
 
     async def retrieve(state: AgentState) -> dict:
@@ -206,6 +219,7 @@ def build_graph(client: MCPClient, chat_model: Any):
         messages = list(state["messages"])
         trace = state.get("trace", [])
         pending: dict | None = None
+        refusal: str | None = None
 
         for raw in last.get("tool_calls", []):
             name = raw["function"]["name"]
@@ -215,8 +229,23 @@ def build_graph(client: MCPClient, chat_model: Any):
             if tool_bridge.is_write_tool(name) and state.get("confirm_token"):
                 args["confirm_token"] = state["confirm_token"]
 
+            decision = guardrails.gate_action(
+                name, args, employee_id=state.get("employee_id"),
+                confirm_token=state.get("confirm_token"))
+            if not decision.allow:
+                t = Trace(steps=list(trace))
+                t.add("guardrail", tool=name, result_summary=decision.refusal or
+                      "refused to act", status="error")
+                trace = t.as_list()
+                messages.append({"role": "tool", "tool_call_id": raw["id"],
+                                 "name": name, "content": decision.refusal or ""})
+                refusal = decision.refusal
+                continue
+
             call: ToolCall = await client.call(name, **args)
-            trace = trace + [call.as_trace_step(len(trace) + 1)]
+            t = Trace(steps=list(trace))
+            t.add_tool_call(call)
+            trace = t.as_list()
             results.append({"tool": name, "ok": call.ok,
                             "payload": call.payload, "error": call.error})
 
@@ -244,7 +273,17 @@ def build_graph(client: MCPClient, chat_model: Any):
             "trace": trace, "steps": state.get("steps", 0) + 1,
             "requires_confirmation": pending is not None,
             "pending_action": pending,
+            "action_refusal": refusal,
         }
+
+    def _with_handoff(result: dict, state: AgentState) -> dict:
+        """Escalations reach the reader, whatever path produced the answer."""
+        raw = state.get("escalation")
+        if not raw:
+            return result
+        esc = guardrails.Escalation(route=raw["route"], reason=raw["reason"])
+        return {**result, "answer": guardrails.append_handoff(
+            result.get("answer", ""), esc)}
 
     async def synthesize_node(state: AgentState) -> dict:
         intent = state.get("intent", "policy_qa")
@@ -252,47 +291,52 @@ def build_graph(client: MCPClient, chat_model: Any):
         if state.get("requires_confirmation"):
             action = state["pending_action"] or {}
             return {
-                "answer": (
-                    "This would perform an action, so it needs your confirmation "
-                    f"first: {action.get('tool')}. Review the preview and confirm "
-                    "to proceed. Nothing has been created."
-                ),
+                "answer": guardrails.confirmation_prompt(
+                    action.get("tool", ""), action.get("preview", {})),
                 "citations": [], "answer_basis": "awaiting_confirmation",
                 "trace": _trace(state, "guardrail",
                                 result_summary=f"confirmation gate: {action.get('tool')}",
                                 status="ok"),
             }
 
+        if state.get("action_refusal"):
+            return _with_handoff(
+                {**guardrails.refusal_to_act(state["action_refusal"]),
+                 "trace": state.get("trace", [])}, state)
+
         evidence = state.get("evidence", [])
         results = state.get("tool_results", [])
 
         if intent == "refuse":
-            return {"answer": "That falls outside what this HR assistant covers.",
+            return _with_handoff({"answer": "That falls outside what this HR assistant covers.",
                     "citations": [], "answer_basis": "refusal",
                     "trace": _trace(state, "guardrail",
-                                    result_summary="out of scope", status="ok")}
+                                    result_summary="out of scope", status="ok")},
+                                 state)
 
         if intent == "clarify":
-            return {"answer": "I need a bit more detail before I can answer that.",
+            return _with_handoff({"answer": "I need a bit more detail before I can answer that.",
                     "citations": [], "answer_basis": "clarification",
                     "trace": _trace(state, "guardrail",
-                                    result_summary="ambiguous request", status="ok")}
+                                    result_summary="ambiguous request", status="ok")},
+                                 state)
 
         # No evidence and no tool data: refuse rather than answer from model priors.
         if not evidence and not results:
-            return {"answer": ("I could not find anything in company policy that "
+            return _with_handoff({"answer": ("I could not find anything in company policy that "
                                "covers that."),
                     "citations": [], "answer_basis": "refusal",
                     "trace": _trace(state, "guardrail",
                                     result_summary="insufficient evidence",
-                                    status="ok")}
+                                    status="ok")},
+                                 state)
 
         out = _synthesize(state["question"], evidence, results,
                           "policy" if intent == "policy_qa" else "workflow")
         basis = out.get("basis") or (
             "both" if evidence and results else
             "policy_rag" if evidence else "tool_data")
-        return {
+        return _with_handoff({
             "answer": out.get("answer", ""),
             "citations": out.get("citations", []),
             "answer_basis": basis,
@@ -300,7 +344,7 @@ def build_graph(client: MCPClient, chat_model: Any):
                             result_summary=f"basis={basis}, "
                                            f"{len(out.get('citations', []))} citation(s)",
                             status="ok"),
-        }
+        }, state)
 
     # --------------------------------------------------------------- edges
 

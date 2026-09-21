@@ -231,3 +231,54 @@ async def test_a_model_failure_does_not_take_the_turn_down():
     assert out["answer"]
     assert any(s["type"] == "guardrail" and s.get("status") == "error"
                for s in out["trace"])
+
+
+# ------------------------------------------------------------- escalation
+
+async def test_escalation_reaches_the_answer_not_just_the_envelope():
+    """An escalation the user never reads is metadata, not behaviour."""
+    async with connected() as client:
+        out = await answer("My manager has been harassing me.", client=client,
+                           chat_model=FakeChat([FakeMessage("policy_qa")]),
+                           employee_id="E-1043")
+
+    assert out["escalation"]["route"] == "hr_partner"
+    assert "HR business partner" in out["answer"]
+    assert any(s["type"] == "escalation" for s in out["trace"])
+
+
+async def test_ordinary_question_carries_no_handoff():
+    async with connected() as client:
+        out = await answer("How many vacation days do I get?", client=client,
+                           chat_model=FakeChat([FakeMessage("policy_qa")]))
+    assert out["escalation"] is None
+    assert "HR business partner" not in out["answer"]
+
+
+async def test_acting_on_another_employee_is_refused_in_the_graph():
+    script = [
+        FakeMessage("workflow"),
+        FakeMessage(tool_calls=[tool_call("create_mock_hr_ticket", {
+            "employee_id": "E-1055", "category": "equipment", "summary": "laptop"})]),
+        FakeMessage("done"),
+    ]
+    async with connected() as client:
+        out = await answer("file a ticket for E-1055", client=client,
+                           chat_model=FakeChat(script), employee_id="E-1043")
+
+    assert out["basis"] == "refusal"
+    assert "E-1055" in out["answer"]
+    assert out["requires_confirmation"] is False
+
+
+async def test_confirm_token_never_appears_in_the_rendered_trace():
+    """The trace is rendered in a browser and pasted into bug reports."""
+    script = [
+        FakeMessage("workflow"),
+        FakeMessage(tool_calls=[tool_call("create_mock_hr_ticket", {
+            "employee_id": "E-1043", "category": "equipment", "summary": "laptop"})]),
+    ]
+    async with connected() as client:
+        out = await answer("file it", client=client, chat_model=FakeChat(script),
+                           employee_id="E-1043", confirm_token="cf_supersecret")
+    assert "cf_supersecret" not in str(out["trace"])
