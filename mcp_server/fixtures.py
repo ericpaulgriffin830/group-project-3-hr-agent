@@ -1,81 +1,202 @@
-"""Mock structured data, loaded from mock_data/*.json.
+"""Mock structured data, adapted from Eric's `mock_data/` onto Contract A.
 
-Everything here is synthetic -- the Muppet names are deliberate, since the brief
-requires mock data be clearly synthetic and nobody mistakes Fozzie Bear for a real
-employee record.
+Eric's datasets are the source of truth. They are shaped for an HR system -- lists
+keyed by `employee_id`, `full_name`, `home_office_id` pointing at `offices.json` --
+while Contract A is shaped for what the agent needs to answer a question. This
+module is the seam between the two.
 
-The employee/PTO/benefits/ticket data now lives in mock_data/ as JSON, which the
-submission requires as its own directory and which lets Eric's UI and the
-evaluation harness read it without importing this package. POLICY_CHUNKS and
-SECTIONS stay in Python: they are a stand-in for Rob's retrieval index, not mock
-structured data, and they disappear when his index lands.
+Adapting here rather than changing Contract A is deliberate. Rob and Eric both
+build against the tool output; the data source underneath is ours to change. The
+one place Contract A did move is `employment_type`, because Eric's data carries the
+exempt / non-exempt distinction and that is a real HR fact his policies rely on --
+collapsing it to `full_time` would throw away information the corpus references.
 
-The SHAPES are Contract A and must not drift -- Rob and Eric build against them.
+POLICY_CHUNKS and SECTIONS are built from `corpus/manifest.json`, so the
+fixture-phase retrieval returns real doc_ids and section_ids from real documents.
+When Rob's index lands it replaces the ranking, not the identifiers -- which is
+what keeps citations valid across the swap.
 """
 
+from __future__ import annotations
+
 import json
+from functools import lru_cache
 from pathlib import Path
 
-#: The submission requires a mock_data/ directory, and structured data belongs in
-#: data files rather than Python -- Eric's UI and the evaluation harness both read
-#: these without importing our package.
-MOCK_DATA = Path(__file__).resolve().parent.parent / "mock_data"
+ROOT = Path(__file__).resolve().parent.parent
+MOCK_DATA = ROOT / "mock_data"
+CORPUS = ROOT / "corpus"
 
 
-def _load(name: str, key: str) -> dict | list:
-    """Read one mock_data file. Keys starting with '_' are notes, not data."""
-    with open(MOCK_DATA / name) as fh:
-        return json.load(fh)[key]
+def _read(path: Path):
+    with open(path) as fh:
+        return json.load(fh)
 
 
-EMPLOYEES: dict = _load("employees.json", "employees")
-PTO: dict = _load("pto.json", "pto")
-BENEFITS: dict = _load("benefits.json", "benefits")
-TICKETS: list = _load("tickets.json", "tickets")
+def _by_id(rows: list[dict], key: str = "employee_id") -> dict:
+    return {row[key]: row for row in rows}
 
-# Stand-in for Rob's index. Keyed loosely so fixture search returns something sane.
-POLICY_CHUNKS = [
-    {"doc_id": "remote-work", "title": "Remote Work Policy", "section": "3.2 Out-of-State Work",
-     "snippet": "Employees working outside their registered work state for more than 30 consecutive "
-                "days require written manager approval and an HR tax review.", "score": 0.91},
-    {"doc_id": "multi-state-work-and-tax", "title": "Multi-State Work and Tax",
-     "section": "2.1 Nexus Thresholds",
-     "snippet": "Work performed in a non-registered state beyond 30 days may create employer tax "
-                "nexus. HR must be notified before travel begins.", "score": 0.88},
-    {"doc_id": "data-security", "title": "Data Security Standards", "section": "5.4 Remote Access",
-     "snippet": "Company data may only be accessed over managed devices with full-disk encryption "
-                "and active VPN when outside the corporate network.", "score": 0.84},
-    {"doc_id": "pto-and-leave", "title": "PTO and Leave", "section": "1.3 Requesting Time Off",
-     "snippet": "PTO requests of three or more consecutive days require manager approval submitted "
-                "at least five business days in advance.", "score": 0.93},
-    {"doc_id": "pto-and-leave", "title": "PTO and Leave", "section": "1.7 Blackout Periods",
-     "snippet": "PTO is not granted during posted blackout periods except in cases of documented "
-                "emergency approved by a department head.", "score": 0.79},
-    {"doc_id": "benefits-overview", "title": "Benefits Overview", "section": "4.1 Eligibility",
-     "snippet": "Full-time employees are eligible from date of hire. Part-time employees become "
-                "eligible after a 90-day waiting period. Contractors are not eligible.", "score": 0.86},
-]
 
-SECTIONS = {
-    ("remote-work", "3.2"): "Employees working outside their registered work state for more than 30 "
-                            "consecutive days require written manager approval and an HR tax review. "
-                            "Requests must be submitted at least 14 days before departure.",
-    ("pto-and-leave", "1.3"): "PTO requests of three or more consecutive days require manager approval "
-                              "submitted at least five business days in advance. Approval is not "
-                              "automatic and depends on team coverage.",
-    # Every section a chunk advertises must be fetchable. Search results that name a
-    # section get_policy_section cannot return send the agent round the loop for
-    # nothing -- it burns the step budget and reads badly in a demo trace.
-    ("pto-and-leave", "1.7"): "PTO is not granted during posted blackout periods except in cases of "
-                              "documented emergency approved by a department head. Blackout periods "
-                              "are published at least 60 days in advance.",
-    ("multi-state-work-and-tax", "2.1"): "Work performed in a non-registered state beyond 30 consecutive "
-                                         "days may create employer tax nexus. HR must be notified before "
-                                         "travel begins so payroll withholding can be adjusted.",
-    ("data-security", "5.4"): "Company data may only be accessed over managed devices with full-disk "
-                              "encryption and an active VPN when outside the corporate network. "
-                              "Personal devices require an approved BYOD attestation on file.",
-    ("benefits-overview", "4.1"): "Full-time employees are eligible for benefits from date of hire. "
-                                  "Part-time employees become eligible after a 90-day waiting period. "
-                                  "Contractors are not eligible for company benefits.",
-}
+# --------------------------------------------------------------- raw sources
+
+_EMPLOYEE_ROWS: list[dict] = _read(MOCK_DATA / "employees.json")
+_PTO_ROWS: list[dict] = _read(MOCK_DATA / "pto_balances.json")
+_BENEFITS_ROWS: list[dict] = _read(MOCK_DATA / "benefits_elections.json")
+_OFFICE_ROWS: list[dict] = _read(MOCK_DATA / "offices.json")
+
+OFFICES: dict = _by_id(_OFFICE_ROWS, "office_id")
+TICKETS: list = _read(MOCK_DATA / "hr_tickets.json")
+
+
+def _location(row: dict) -> str:
+    """A human-readable location string.
+
+    Contract A returns one string because that is what an answer quotes. The
+    office lookup is done here so the agent never has to join two datasets to say
+    where someone works.
+    """
+    office = OFFICES.get(row.get("home_office_id"))
+    if office:
+        return f"{office['city']}, {office['state']}"
+    state = row.get("home_state")
+    return f"Remote - {state}" if state else "Unknown"
+
+
+def _tenure_months(hire_date: str, as_of: str = "2026-09-21") -> int:
+    from datetime import date
+
+    start = date.fromisoformat(hire_date)
+    now = date.fromisoformat(as_of)
+    return (now.year - start.year) * 12 + (now.month - start.month)
+
+
+@lru_cache(maxsize=1)
+def _employees() -> dict:
+    rows = _by_id(_EMPLOYEE_ROWS)
+    out = {}
+    for eid, row in rows.items():
+        manager = rows.get(row.get("manager_id"))
+        out[eid] = {
+            "employee_id": eid,
+            "name": row["full_name"],
+            "role": row["job_title"],
+            "employment_type": row["employment_type"],
+            "location": _location(row),
+            "manager_id": row.get("manager_id"),
+            "manager_name": manager["full_name"] if manager else None,
+            "hire_date": row["hire_date"],
+            "tenure_months": _tenure_months(row["hire_date"]),
+        }
+    return out
+
+
+@lru_cache(maxsize=1)
+def _pto() -> dict:
+    """Contract A's PTO shape, from Eric's richer accrual records.
+
+    Rows where `eligible` is false are dropped entirely rather than zero-filled.
+    A contractor with 0 days reads as "none left", implying they could earn some;
+    the absence is what lets check_pto_balance say they do not accrue at all.
+    """
+    out = {}
+    for row in _PTO_ROWS:
+        if not row.get("eligible", True):
+            continue
+        out[row["employee_id"]] = {
+            "accrued_days": float(row["accrued_ytd_days"]),
+            "used_days": float(row["used_ytd_days"]),
+            "available_days": float(row["balance_days"]),
+            "carryover_days": float(row.get("carryover_days_from_prior_year", 0)),
+            "blackout_dates": row.get("blackout_dates") or [],
+            "accrual_rate": float(row["accrual_rate_days_per_month"]),
+            "notes": row.get("notes") or "",
+        }
+    return out
+
+
+@lru_cache(maxsize=1)
+def _benefits() -> dict:
+    out = {}
+    for row in _BENEFITS_ROWS:
+        elections = []
+        for plan_key, label in (("medical_plan", "Medical"),
+                                ("dental_plan", "Dental"),
+                                ("vision_plan", "Vision")):
+            value = row.get(plan_key)
+            if value and value.lower() not in ("none", "waived", "not enrolled"):
+                elections.append({"plan": f"{label} — {value}", "tier": "employee",
+                                  "status": "active"})
+        if row.get("retirement_enrolled"):
+            elections.append({
+                "plan": f"Retirement {row.get('retirement_contribution_pct', 0)}%",
+                "tier": "employee", "status": "active"})
+
+        out[row["employee_id"]] = {
+            "elections": elections,
+            "eligible": bool(row.get("benefits_eligible")),
+            "waiting_period_days": 0 if row.get("waiting_period_met") else 90,
+            "eligibility_date": row.get("effective_date"),
+        }
+    return out
+
+
+EMPLOYEES: dict = _employees()
+PTO: dict = _pto()
+BENEFITS: dict = _benefits()
+
+
+# ------------------------------------------------- fixture-phase retrieval
+
+@lru_cache(maxsize=1)
+def _corpus() -> tuple[list[dict], dict]:
+    """Build stand-in chunks and section text from Eric's real corpus.
+
+    The doc_ids and section_ids are HIS -- taken from the manifest and the document
+    bodies -- so a citation produced today stays valid when Rob's index replaces
+    the ranking underneath. Getting that wrong is how citation accuracy goes to
+    zero at the end of the week.
+    """
+    manifest = _read(CORPUS / "manifest.json")
+    chunks: list[dict] = []
+    sections: dict = {}
+
+    for doc in manifest["documents"]:
+        body = (CORPUS / "policies" / doc["filename"]).read_text()
+        for section in doc["sections"]:
+            sid, heading = section["section_id"], section["heading"]
+            text = _section_text(body, sid)
+            if not text:
+                continue
+            sections[(doc["doc_id"], sid)] = text
+            chunks.append({
+                "doc_id": doc["doc_id"],
+                "title": doc["title"],
+                "section": f"{sid} {heading}",
+                "snippet": text[:320].strip(),
+                "score": 0.5,
+            })
+    return chunks, sections
+
+
+def _section_text(body: str, section_id: str) -> str:
+    """Pull one section out of a document by its id.
+
+    Eric's section ids appear in the headings themselves (`## CONDUCT-6 ...`) in
+    markdown and txt, and inside heading tags in HTML. Matching on the id rather
+    than the heading text means a reworded heading does not break retrieval.
+    """
+    import re
+
+    pattern = re.compile(
+        rf"(?:^|\n)[#\s]*(?:<h[1-6][^>]*>\s*)?{re.escape(section_id)}\b(.*?)"
+        rf"(?=\n[#\s]*(?:<h[1-6][^>]*>\s*)?[A-Z][A-Z0-9-]+-\d+\b|\Z)",
+        re.S,
+    )
+    match = pattern.search(body)
+    if not match:
+        return ""
+    text = re.sub(r"<[^>]+>", " ", match.group(1))
+    return re.sub(r"\s+", " ", text).strip()
+
+
+POLICY_CHUNKS, SECTIONS = _corpus()

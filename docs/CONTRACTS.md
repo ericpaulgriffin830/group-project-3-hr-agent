@@ -112,7 +112,7 @@ Chris populates `trace`, `basis`, `escalate`. Rob populates `answer`, `citations
   ],
   "trace": [
     {"step": 1, "tool": "lookup_employee_profile",
-     "args": {"employee_id": "E-1043"},
+     "args": {"employee_id": "E1001"},
      "result_summary": "Full-time, Pittsburgh PA, manager E-1002",
      "latency_ms": 84, "status": "ok"}
   ],
@@ -209,38 +209,54 @@ people build against different assumptions for a day.
 
 ## Contract D — the document ID registry
 
-**Authored by:** Eric (he writes the corpus).
-**Consumed by:** Rob (stores `doc_id` as chunk metadata) and Chris (the agent cites it).
+**Authored by:** Eric (he writes the corpus). **Consumed by:** Rob (chunk metadata)
+and Chris (the agent cites it).
 
-Every citation the system produces is a `doc_id`. If Eric's filenames and these IDs
-drift apart, citations point at documents that don't exist and citation accuracy —
-a scored metric — goes to zero. So the IDs are a contract, not a filename convention.
+**Superseded 2026-09-21.** This section originally specified twelve lowercase
+hyphenated ids (`remote-work`, `pto-and-leave`, …) derived from filenames. Eric's
+corpus landed in `6e56740` with a different scheme, and the real corpus wins over a
+placeholder: his section ids are written into the document bodies
+(`## CONDUCT-6 Conflicts of Interest`), so changing them means rewriting twelve
+documents, while amending this table is an edit. The ids below are now
+authoritative and come from `corpus/manifest.json`.
 
-**Rule: `doc_id` == the corpus filename without its extension.** Lowercase, hyphenated.
+Every citation the system produces is a `doc_id`. If these and the corpus drift
+apart, citations point at documents that don't exist and citation accuracy — a
+scored metric — goes to zero. That is why this is a contract and not a convention.
 
-| `doc_id` | Covers | Format |
-|---|---|---|
-| `pto-and-leave` | accrual, requests, approval, blackout periods | md |
-| `holidays` | company holidays, floating days | md |
-| `remote-work` | eligibility, out-of-state work, approval chain | md |
-| `multi-state-work-and-tax` | nexus thresholds, notification duties | md |
-| `travel-and-expense` | reimbursable categories, limits, receipts | md |
-| `data-security` | device standards, VPN, remote access | md |
-| `benefits-overview` | eligibility, waiting periods, elections | md |
-| `onboarding` | first-week checklist, provisioning | html |
-| `equipment-and-byod` | issued equipment, personal devices | html |
-| `code-of-conduct` | workplace conduct, reporting | pdf |
-| `performance-and-promotion` | review cycle, promotion criteria | pdf |
-| `hr-case-escalation` | what escalates, to whom, confidentiality | md |
+| `doc_id` | Covers | Format | Pages |
+|---|---|---|---|
+| `HANDBOOK-OVERVIEW` | Overview | markdown | 3.7 |
+| `PTO-HOLIDAYS` | PTO and Holidays Policy | markdown | 3.3 |
+| `REMOTE-WORK` | Work Arrangement Categories | html | 3.7 |
+| `TAX-LOCATION` | Tax and Work Location Policy | markdown | 3.2 |
+| `EXPENSE` | Expense and Reimbursement Policy | markdown | 2.5 |
+| `EQUIPMENT` | Standard Issue Equipment | html | 2.0 |
+| `INFOSEC` | Information Security Policy | markdown | 2.7 |
+| `BENEFITS` | Benefits Guide | markdown | 2.3 |
+| `LEAVE` | Types of Leave | txt | 2.5 |
+| `ONBOARDING` | Onboarding Checklist and Process | markdown | 2.3 |
+| `CONDUCT` | Workplace Conduct and Anti-Harassment Policy | markdown | 2.3 |
+| `HR-OPS` | HR Service Model | html | 2.0 |
 
-Three formats on purpose — the brief asks for at least two handled.
+**Total: 32.5 pages, 16,258 words, across markdown / HTML / TXT.**
+The brief asks for 30–120 pages and at least two formats; both are met.
 
-**Required cross-references.** The brief requires at least one question needing
-retrieval from multiple documents. That only works if the corpus is written for it:
+**Section IDs** are per-document prefixes with an ordinal — `RW-2`, `CONDUCT-6`,
+`HANDBOOK-1` — and they appear in the headings themselves. `get_policy_section`
+fetches by that id, and `corpus/manifest.json` lists every one. Matching on the id
+rather than the heading text means a reworded heading does not break retrieval.
 
-- `remote-work` §3.2 must reference BOTH `data-security` and `multi-state-work-and-tax`
-- `pto-and-leave` must reference `holidays` for blackout periods
-- `benefits-overview` must distinguish full-time / part-time / contractor
+**Known gaps, raised with Eric 2026-09-21** — these are corpus edits, not code:
 
-**Section IDs.** `get_policy_section(doc_id, section_id)` needs stable section IDs.
-Use numbered headings (`## 3.2 Out-of-State Work`); `section_id` is the number only.
+1. `REMOTE-WORK` cross-references `INFOSEC` and `EQUIPMENT` but **not
+   `TAX-LOCATION`**. Demo Task A and rubric item 3's multi-document question were
+   specced on remote work → security **and** tax. One leg is missing.
+2. **No employee record carries blackout dates.** `PTO-HOLIDAYS` describes blackout
+   periods and Contract A declares the field, but `mock_data/pto_balances.json`
+   has none — so the agent can cite the rule and never apply it to anyone.
+3. **No PTO balance is below 3.0 days**, so "can I take three days?" is yes for
+   everyone and demo Task B never exercises its refusal path.
+
+Both 2 and 3 are pinned as `xfail` tests in `tests/test_mock_data.py`, so they flip
+to passing the moment the data lands.

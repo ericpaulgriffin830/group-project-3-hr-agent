@@ -16,9 +16,9 @@ import pytest
 from mcp_server import schemas
 from mcp_server.server import mcp
 
-TICKET = {"employee_id": "E-1043", "category": "workplace_location",
+TICKET = {"employee_id": "E1001", "category": "workplace_location",
           "summary": "Multi-state work registration"}
-EMAIL = {"employee_id": "E-1043", "recipient_role": "manager",
+EMAIL = {"employee_id": "E1001", "recipient_role": "manager",
          "intent": "PTO request", "context": "Requesting 3 days in October."}
 
 
@@ -57,12 +57,12 @@ async def test_input_model_agrees_with_the_published_mcp_schema(tool):
     ("tool", "args"),
     [
         ("search_policy_documents", {"query": "remote work out of state"}),
-        ("get_policy_section", {"doc_id": "remote-work", "section_id": "3.2"}),
-        ("lookup_employee_profile", {"employee_id": "E-1043"}),
-        ("check_pto_balance", {"employee_id": "E-1043"}),
-        ("lookup_benefits_status", {"employee_id": "E-1043"}),
+        ("get_policy_section", {"doc_id": "REMOTE-WORK", "section_id": "RW-2"}),
+        ("lookup_employee_profile", {"employee_id": "E1001"}),
+        ("check_pto_balance", {"employee_id": "E1001"}),
+        ("lookup_benefits_status", {"employee_id": "E1001"}),
         ("check_policy_compliance",
-         {"scenario": "work remotely from another state", "employee_id": "E-1043"}),
+         {"scenario": "work remotely from another state", "employee_id": "E1001"}),
         ("create_mock_hr_ticket", TICKET),
         ("draft_hr_email", EMAIL),
     ],
@@ -89,9 +89,9 @@ async def test_write_tools_validate_in_both_phases(call):
 @pytest.mark.parametrize(
     ("tool", "args"),
     [
-        ("lookup_employee_profile", {"employee_id": "E-9999"}),
-        ("check_pto_balance", {"employee_id": "E-1099"}),
-        ("get_policy_section", {"doc_id": "remote-work", "section_id": "99.9"}),
+        ("lookup_employee_profile", {"employee_id": "E9999"}),
+        ("check_pto_balance", {"employee_id": "E1011"}),
+        ("get_policy_section", {"doc_id": "REMOTE-WORK", "section_id": "99.9"}),
         ("search_policy_documents", {"query": "   "}),
     ],
 )
@@ -111,8 +111,8 @@ def test_an_extra_field_fails_validation():
     A tool quietly growing a field is a contract change, and change control says
     those go through a PR. Tolerating it here would make that rule unenforceable.
     """
-    good = {"doc_id": "remote-work", "title": "Remote Work Policy",
-            "section": "3.2", "text": "..."}
+    good = {"doc_id": "REMOTE-WORK", "title": "Remote Work Policy",
+            "section": "RW-2", "text": "..."}
     schemas.GetPolicySectionOut.model_validate(good)
 
     with pytest.raises(Exception):

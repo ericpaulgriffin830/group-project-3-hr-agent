@@ -27,7 +27,12 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 # Closed sets. Widening one of these IS a contract change.
-EmploymentType = Literal["full_time", "part_time", "contractor"]
+# Widened 2026-09-21 to match mock_data/employees.json. Eric's data carries the
+# exempt / non-exempt distinction and his policies rely on it -- overtime and leave
+# eligibility both turn on it -- so collapsing both to "full_time" would throw away
+# a fact the corpus references. The data is the source of truth; the contract follows.
+EmploymentType = Literal["full_time_exempt", "full_time_non_exempt",
+                         "part_time", "contractor"]
 Verdict = Literal["compliant", "non_compliant", "conditional", "insufficient_evidence"]
 RecipientRole = Literal["manager", "hr_partner", "benefits"]
 RetrievalMode = Literal["hybrid", "vector_only", "keyword_only", "fixture"]
@@ -166,6 +171,11 @@ class PtoBalanceOut(Strict):
     available_days: float
     blackout_dates: list[str]
     accrual_rate: float
+    # From Eric's accrual records. `notes` carries the human caveat his data
+    # already wrote down -- pro-rated accrual, a leave hold -- which an answer
+    # about someone's balance usually needs.
+    carryover_days: float = 0.0
+    notes: str = ""
 
 
 # ---------------------------------------------------------- 5. benefits data

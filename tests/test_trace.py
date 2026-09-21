@@ -53,9 +53,9 @@ def test_confirm_token_is_redacted_from_recorded_args():
     authorises a write.
     """
     step = Trace().add("tool_call", tool="create_mock_hr_ticket",
-                       args={"employee_id": "E-1043", "confirm_token": "cf_secret"})
+                       args={"employee_id": "E1001", "confirm_token": "cf_secret"})
     assert step["args"]["confirm_token"] == "<redacted>"
-    assert step["args"]["employee_id"] == "E-1043"
+    assert step["args"]["employee_id"] == "E1001"
     assert "cf_secret" not in str(step)
 
 

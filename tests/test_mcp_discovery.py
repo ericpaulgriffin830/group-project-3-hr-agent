@@ -91,6 +91,6 @@ async def test_every_tool_describes_itself():
 
 async def test_a_simple_tool_call_round_trips(call):
     """Discovery is not enough -- prove a tool actually executes through the MCP layer."""
-    profile = await call("lookup_employee_profile", employee_id="E-1043")
-    assert profile["employee_id"] == "E-1043"
+    profile = await call("lookup_employee_profile", employee_id="E1001")
+    assert profile["employee_id"] == "E1001"
     assert "error" not in profile

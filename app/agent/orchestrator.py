@@ -50,7 +50,7 @@ refuse    - not an HR topic, or something the assistant should not do.
 Examples:
 "How many vacation days does the company give?" -> policy_qa
 "What is the expense limit for hotels?" -> policy_qa
-"Can I work from Colorado for six weeks? I am E-1043." -> workflow
+"Can I work from Colorado for six weeks? I am E1001." -> workflow
 "Am I eligible for the dental plan?" -> workflow
 "How much PTO do I have left?" -> workflow
 "File a ticket about my laptop." -> workflow

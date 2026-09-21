@@ -10,14 +10,14 @@ import pytest
 
 from app.agent import guardrails
 
-TICKET_ARGS = {"employee_id": "E-1043", "category": "equipment", "summary": "laptop"}
+TICKET_ARGS = {"employee_id": "E1001", "category": "equipment", "summary": "laptop"}
 
 
 # ----------------------------------------------------------- the gate
 
 @pytest.mark.parametrize("tool", sorted(guardrails.GATED_TOOLS))
 def test_write_tools_need_confirmation(tool):
-    d = guardrails.gate_action(tool, TICKET_ARGS, employee_id="E-1043",
+    d = guardrails.gate_action(tool, TICKET_ARGS, employee_id="E1001",
                                confirm_token=None)
     assert d.allow and d.needs_confirmation
 
@@ -25,14 +25,14 @@ def test_write_tools_need_confirmation(tool):
 @pytest.mark.parametrize("tool", ["search_policy_documents", "check_pto_balance",
                                   "lookup_employee_profile"])
 def test_read_only_tools_pass_straight_through(tool):
-    d = guardrails.gate_action(tool, {"employee_id": "E-1043"},
-                               employee_id="E-1043", confirm_token=None)
+    d = guardrails.gate_action(tool, {"employee_id": "E1001"},
+                               employee_id="E1001", confirm_token=None)
     assert d.allow and not d.needs_confirmation
 
 
 def test_a_supplied_token_clears_the_gate():
     d = guardrails.gate_action("create_mock_hr_ticket", TICKET_ARGS,
-                               employee_id="E-1043", confirm_token="cf_abc")
+                               employee_id="E1001", confirm_token="cf_abc")
     assert d.allow and not d.needs_confirmation
 
 
@@ -53,10 +53,10 @@ def test_acting_on_someone_elses_record_is_refused():
     your own, and confirming the first does not authorise the second.
     """
     d = guardrails.gate_action("create_mock_hr_ticket",
-                               {**TICKET_ARGS, "employee_id": "E-1055"},
-                               employee_id="E-1043", confirm_token="cf_abc")
+                               {**TICKET_ARGS, "employee_id": "E1006"},
+                               employee_id="E1001", confirm_token="cf_abc")
     assert not d.allow
-    assert "E-1055" in d.refusal and "E-1043" in d.refusal
+    assert "E1006" in d.refusal and "E1001" in d.refusal
 
 
 # --------------------------------------------------------- escalation

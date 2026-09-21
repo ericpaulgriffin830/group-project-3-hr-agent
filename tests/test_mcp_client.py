@@ -100,11 +100,11 @@ def test_agent_layer_never_imports_the_server_directly():
 
 async def test_successful_call_returns_payload_and_latency():
     async with connected() as client:
-        call = await client.call("lookup_employee_profile", employee_id="E-1043")
+        call = await client.call("lookup_employee_profile", employee_id="E1001")
         assert call.ok
         # Assert on the id, not the display name -- renaming a fixture employee is
         # cosmetic and should not break the transport test.
-        assert call.payload["employee_id"] == "E-1043"
+        assert call.payload["employee_id"] == "E1001"
         assert call.payload["name"]
         assert call.latency_ms >= 0
 
@@ -117,7 +117,7 @@ async def test_tool_refusal_is_not_a_transport_failure():
     response to the user entirely.
     """
     async with connected() as client:
-        call = await client.call("lookup_employee_profile", employee_id="E-9999")
+        call = await client.call("lookup_employee_profile", employee_id="E9999")
         assert call.ok is False
         assert call.error == "employee_not_found"
 
@@ -133,7 +133,7 @@ async def test_unknown_tool_is_refused_before_reaching_the_wire():
 
 async def test_calling_before_connecting_returns_rather_than_raises():
     """Graceful failure is a rubric item; an exception into the graph is not."""
-    call = await MCPClient(server=mcp).call("check_pto_balance", employee_id="E-1043")
+    call = await MCPClient(server=mcp).call("check_pto_balance", employee_id="E1001")
     assert isinstance(call, ToolCall)
     assert call.ok is False
     assert call.error == "tool_unavailable"
@@ -153,7 +153,7 @@ async def test_discover_before_connecting_raises():
 
 async def test_trace_step_matches_contract_b_and_omits_reasoning():
     async with connected() as client:
-        call = await client.call("check_pto_balance", employee_id="E-1043")
+        call = await client.call("check_pto_balance", employee_id="E1001")
         step = call.as_trace_step(2)
 
         assert set(step) == {"step", "type", "tool", "args", "result_summary",
@@ -168,7 +168,7 @@ async def test_trace_step_matches_contract_b_and_omits_reasoning():
 async def test_failed_call_traces_as_error_with_its_code():
     async with connected() as client:
         step = (await client.call("lookup_employee_profile",
-                              employee_id="E-9999")).as_trace_step(1)
+                              employee_id="E9999")).as_trace_step(1)
         assert step["status"] == "error"
         assert "employee_not_found" in step["result_summary"]
 
@@ -217,5 +217,5 @@ async def test_stdio_subprocess_end_to_end(monkeypatch):
     async with MCPClient() as c:
         tools = await c.discover()
         assert len(tools) == 8
-        call = await c.call("lookup_employee_profile", employee_id="E-1043")
-        assert call.ok and call.payload["employee_id"] == "E-1043"
+        call = await c.call("lookup_employee_profile", employee_id="E1001")
+        assert call.ok and call.payload["employee_id"] == "E1001"

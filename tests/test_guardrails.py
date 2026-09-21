@@ -15,13 +15,13 @@ from __future__ import annotations
 import pytest
 
 TICKET = {
-    "employee_id": "E-1043",
+    "employee_id": "E1001",
     "category": "workplace_location",
     "summary": "Multi-state work registration",
 }
 
 EMAIL = {
-    "employee_id": "E-1043",
+    "employee_id": "E1001",
     "recipient_role": "manager",
     "intent": "PTO request",
     "context": "Requesting 3 days in October.",
@@ -62,7 +62,7 @@ async def test_forged_token_is_refused(call, tool, args):
     [
         ("create_mock_hr_ticket", TICKET, {"category": "termination"}),
         ("create_mock_hr_ticket", TICKET, {"summary": "Something else entirely"}),
-        ("create_mock_hr_ticket", TICKET, {"employee_id": "E-1077"}),
+        ("create_mock_hr_ticket", TICKET, {"employee_id": "E1010"}),
         ("draft_hr_email", EMAIL, {"context": "Please approve my resignation."}),
         ("draft_hr_email", EMAIL, {"recipient_role": "hr_partner"}),
     ],
@@ -108,14 +108,14 @@ async def test_draft_hr_email_never_reports_sending(call):
     ["lookup_employee_profile", "check_pto_balance", "lookup_benefits_status"],
 )
 async def test_unknown_employee_is_an_error_not_a_guess(call, tool):
-    result = await call(tool, employee_id="E-9999")
+    result = await call(tool, employee_id="E9999")
     assert result["error"] == "employee_not_found"
     assert "name" not in result
 
 
 async def test_write_tools_reject_an_unknown_employee_before_previewing(call):
     """No token should ever be issued for an employee who does not exist."""
-    result = await call("create_mock_hr_ticket", **{**TICKET, "employee_id": "E-9999"})
+    result = await call("create_mock_hr_ticket", **{**TICKET, "employee_id": "E9999"})
     assert result["error"] == "employee_not_found"
     assert "confirm_token" not in result
 
@@ -126,7 +126,7 @@ async def test_contractor_with_no_pto_record_is_distinguished_from_a_missing_emp
     Collapsing them would have the agent tell a real contractor they are not an
     employee.
     """
-    result = await call("check_pto_balance", employee_id="E-1099")
+    result = await call("check_pto_balance", employee_id="E1011")
     assert result["error"] == "no_pto_record"
 
 
@@ -137,7 +137,7 @@ async def test_compliance_returns_insufficient_evidence_rather_than_guessing(cal
     result = await call(
         "check_policy_compliance",
         scenario="Can I expense a jetpack for my commute?",
-        employee_id="E-1043",
+        employee_id="E1001",
     )
     assert result["verdict"] == "insufficient_evidence"
     assert result["policy_refs"] == []
@@ -152,7 +152,7 @@ async def test_multi_document_scenario_cites_more_than_one_policy(call):
     result = await call(
         "check_policy_compliance",
         scenario="I want to work remotely from another state for six weeks.",
-        employee_id="E-1043",
+        employee_id="E1001",
     )
     assert result["verdict"] == "conditional"
     doc_ids = {ref["doc_id"] for ref in result["policy_refs"]}
@@ -165,5 +165,5 @@ async def test_empty_query_is_rejected(call):
 
 
 async def test_missing_section_is_not_found_not_an_empty_string(call):
-    result = await call("get_policy_section", doc_id="remote-work", section_id="99.9")
+    result = await call("get_policy_section", doc_id="REMOTE-WORK", section_id="99.9")
     assert result["error"] == "section_not_found"

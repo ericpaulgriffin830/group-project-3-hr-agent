@@ -1,0 +1,162 @@
+DOCUMENT: Leave of Absence Policy
+DOC_ID: LEAVE
+VERSION: 3.0
+EFFECTIVE_DATE: 2026-01-05
+OWNER: People Operations / Legal
+APPLIES_TO: All employees; eligibility for specific leave types varies as noted below
+
+======================================================================
+LEAVE-1 Types of Leave
+======================================================================
+Northbridge provides several categories of leave beyond standard PTO
+(see PTO-HOLIDAYS): family and medical leave, parental leave, non-FMLA
+medical leave, bereavement leave, and jury duty / civic leave. Each
+type has its own eligibility rules and documentation requirements,
+described in the sections below. Leave under this policy runs
+concurrently with any leave required under applicable state or federal
+law, including the federal Family and Medical Leave Act (FMLA) and any
+state family leave program, rather than in addition to it. Where a
+state law provides a broader right than described in this policy (for
+example, a longer job-protection period, or eligibility for a smaller
+employer than the federal FMLA threshold), Northbridge follows the
+broader state requirement for employees working in that state.
+
+Leave under this policy is distinct from, and should not be confused
+with, the temporary remote work location changes described in the
+Remote Work Policy; an employee who needs extended time away from work
+entirely should use this policy, while an employee who wants to
+continue working but from a different location should use the Remote
+Work Policy instead.
+
+======================================================================
+LEAVE-2 Family and Medical Leave (FMLA-aligned)
+======================================================================
+Employees who have worked at Northbridge for at least 12 months and
+at least 1,250 hours in the preceding 12 months are eligible for up to
+12 weeks of job-protected leave per year for their own serious health
+condition, to care for an immediate family member with a serious
+health condition, or for the birth, adoption, or foster placement of a
+child. This leave is unpaid unless covered by PTO or short-term
+disability benefits (see BEN-6), which employees may use concurrently
+with FMLA leave to receive pay during the leave period. Group health
+benefits continue during FMLA leave on the same terms as active
+employment, meaning the employee continues to pay their normal share
+of premiums and the Company continues its normal contribution, exactly
+as if the employee were actively working.
+
+The 12-week entitlement is measured on a rolling 12-month basis looked
+back from the start of any FMLA leave, consistent with federal
+regulations; an employee who has already used 5 weeks of FMLA leave in
+the past 12 months has 7 weeks remaining, not a fresh 12-week
+entitlement, until enough time has passed for the earlier leave to
+roll off the 12-month lookback window.
+
+======================================================================
+LEAVE-3 Parental Leave
+======================================================================
+In addition to any FMLA leave under LEAVE-2, Northbridge provides 6
+weeks of fully paid parental leave to all employees (regardless of the
+12-month FMLA eligibility threshold) following the birth, adoption, or
+foster placement of a child. Paid parental leave runs concurrently
+with FMLA leave for eligible employees and is available on a
+standalone basis for employees not yet FMLA-eligible. Parental leave
+must be taken within 12 months of the qualifying event and may be
+taken continuously or, with manager and HR agreement, in up to two
+blocks of at least 2 weeks each. Both parents employed by Northbridge
+following the same qualifying event (for example, two Northbridge
+employees who are partners welcoming a child together) are each
+independently eligible for the full 6 weeks of paid parental leave.
+
+======================================================================
+LEAVE-4 Medical Leave (Non-FMLA)
+======================================================================
+Employees not yet eligible for FMLA leave under LEAVE-2, or who need
+leave beyond the 12-week FMLA entitlement, may request additional
+unpaid medical leave of up to 8 additional weeks, subject to People
+Operations approval and medical documentation. This leave is not
+automatically job-protected in the way FMLA leave is, though
+Northbridge makes reasonable efforts to hold the employee's position
+or offer a comparable role upon return, consistent with applicable
+disability accommodation law. Requests for medical leave beyond this
+additional 8-week period are evaluated individually by People
+Operations and Legal, generally in connection with an ongoing
+interactive accommodation process under applicable disability law
+rather than as a standard leave extension.
+
+======================================================================
+LEAVE-5 Bereavement Leave
+======================================================================
+Employees receive up to 5 paid days of bereavement leave following the
+death of an immediate family member (spouse, domestic partner, child,
+parent, or sibling), and up to 2 paid days for the death of an
+extended family member (grandparent, grandchild, aunt, uncle, or
+in-law). Additional unpaid time or use of PTO may be arranged with
+manager approval for travel or extended circumstances, particularly
+where the employee needs to travel internationally or handle estate
+matters that extend beyond the standard bereavement leave period.
+
+======================================================================
+LEAVE-6 Jury Duty and Civic Leave
+======================================================================
+Northbridge provides paid leave for jury duty for the full duration of
+service, and unpaid leave (or PTO, at the employee's election) for
+voting time and other civic obligations to the extent required by
+applicable state law. Employees should provide their jury summons to
+their manager and People Operations as soon as it is received, both so
+that People Operations can confirm the applicable paid-leave treatment
+and so that the manager can plan for the employee's absence during the
+jury service period, which can vary significantly in length depending
+on the case.
+
+======================================================================
+LEAVE-7 Requesting Leave and Documentation
+======================================================================
+Leave requests are submitted through an HR ticket in the "Leave
+Request" category (see HR-OPS-2), with a target initial response time
+of 2 business days. Medical certification is required for FMLA leave
+(LEAVE-2) and non-FMLA medical leave (LEAVE-4) using the standard
+medical certification form provided by People Operations. Parental
+leave (LEAVE-3) and bereavement leave (LEAVE-5) do not require medical
+certification but do require basic supporting documentation (such as a
+birth certificate, adoption record, or obituary) within 30 days of the
+leave starting, submitted confidentially to People Operations per
+HR-OPS-4.
+
+Employees may use available PTO to cover some or all of the unpaid
+portion of an approved leave (for example, the portion of FMLA leave
+not otherwise covered by paid parental leave or short-term disability),
+as referenced in PTO-8. Employees who wish to do this should indicate
+their preference when submitting the leave request, since PTO usage
+during leave is not automatic and requires the employee's election.
+
+======================================================================
+LEAVE-8 Job Protection and Return to Work
+======================================================================
+Employees on FMLA-eligible leave (LEAVE-2) or paid parental leave
+(LEAVE-3) are restored to the same or an equivalent position upon
+return, consistent with federal and state law. Employees returning
+from a medical leave involving a serious health condition may be asked
+to provide a fitness-for-duty certification before resuming work,
+particularly where the role involves safety-sensitive duties or
+client-facing responsibilities. Questions about return-to-work
+accommodations should be directed to People Operations through an HR
+ticket well before the planned return date, so that any necessary
+accommodation (such as a modified schedule for a gradual return) can be
+arranged in advance rather than on the employee's first day back.
+
+======================================================================
+LEAVE-9 Interaction with Other Policies
+======================================================================
+Leave under this policy interacts with several other documents in this
+corpus: PTO-8 describes how PTO can be used to cover unpaid leave
+portions; BEN-3 and BEN-6 describe how benefits and short-term
+disability continue during leave; and HR-OPS-4 describes the
+confidentiality protections that apply to leave-related medical
+documentation, which is held to a stricter standard than most other HR
+records and is not shared with an employee's manager beyond the fact
+that leave has been approved and its expected duration. An employee
+whose leave need arises from a workplace safety incident should also
+review the incident reporting expectations referenced in the
+Information Security Policy (SEC-6) and the Workplace Conduct Policy
+(CONDUCT-7) where relevant, since those sections address the reporting
+process for the underlying incident separately from the leave itself.

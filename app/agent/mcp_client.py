@@ -145,7 +145,7 @@ class MCPClient:
     Usage:
         async with MCPClient() as client:
             await client.discover()
-            call = await client.call("check_pto_balance", employee_id="E-1043")
+            call = await client.call("check_pto_balance", employee_id="E1001")
     """
 
     def __init__(self, server: Any = None, timeout_s: float = DEFAULT_TIMEOUT_S):

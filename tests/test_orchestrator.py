@@ -83,12 +83,12 @@ async def test_unparseable_intent_falls_back_to_policy_qa():
 async def test_workflow_path_executes_tools_through_mcp():
     script = [
         FakeMessage("workflow"),
-        FakeMessage(tool_calls=[tool_call("check_pto_balance", {"employee_id": "E-1043"})]),
+        FakeMessage(tool_calls=[tool_call("check_pto_balance", {"employee_id": "E1001"})]),
         FakeMessage("You have 6.5 days available."),
     ]
     async with connected() as client:
         out = await answer("how much pto", client=client, chat_model=FakeChat(script),
-                           employee_id="E-1043")
+                           employee_id="E1001")
 
     tool_steps = [s for s in out["trace"] if s["type"] == "tool_call"]
     assert [s["tool"] for s in tool_steps] == ["check_pto_balance"]
@@ -99,7 +99,7 @@ async def test_tool_loop_is_capped():
     """A model that keeps calling the same tool must not loop until timeout."""
     script = [
         FakeMessage("workflow"),
-        FakeMessage(tool_calls=[tool_call("check_pto_balance", {"employee_id": "E-1043"})]),
+        FakeMessage(tool_calls=[tool_call("check_pto_balance", {"employee_id": "E1001"})]),
     ]
     async with connected() as client:
         out = await answer("loop forever", client=client, chat_model=FakeChat(script))
@@ -112,11 +112,11 @@ async def test_a_failing_tool_does_not_stop_the_graph():
     script = [
         FakeMessage("workflow"),
         FakeMessage(tool_calls=[tool_call("lookup_employee_profile",
-                                          {"employee_id": "E-9999"})]),
+                                          {"employee_id": "E9999"})]),
         FakeMessage("I could not find that employee."),
     ]
     async with connected() as client:
-        out = await answer("who is E-9999", client=client, chat_model=FakeChat(script))
+        out = await answer("who is E9999", client=client, chat_model=FakeChat(script))
 
     failed = [s for s in out["trace"] if s.get("status") == "error"]
     assert failed and "employee_not_found" in failed[0]["result_summary"]
@@ -135,7 +135,7 @@ async def test_write_tool_short_circuits_and_creates_nothing():
     script = [
         FakeMessage("workflow"),
         FakeMessage(tool_calls=[tool_call("create_mock_hr_ticket", {
-            "employee_id": "E-1043", "category": "equipment",
+            "employee_id": "E1001", "category": "equipment",
             "summary": "Laptop replacement"})]),
         FakeMessage("should never be reached"),
     ]
@@ -185,7 +185,7 @@ async def test_no_evidence_produces_a_refusal_not_a_guess():
 async def test_trace_is_operational_and_carries_no_reasoning():
     script = [
         FakeMessage("workflow"),
-        FakeMessage(tool_calls=[tool_call("check_pto_balance", {"employee_id": "E-1043"})]),
+        FakeMessage(tool_calls=[tool_call("check_pto_balance", {"employee_id": "E1001"})]),
         FakeMessage("done"),
     ]
     async with connected() as client:
@@ -240,7 +240,7 @@ async def test_escalation_reaches_the_answer_not_just_the_envelope():
     async with connected() as client:
         out = await answer("My manager has been harassing me.", client=client,
                            chat_model=FakeChat([FakeMessage("policy_qa")]),
-                           employee_id="E-1043")
+                           employee_id="E1001")
 
     assert out["escalation"]["route"] == "hr_partner"
     assert "HR business partner" in out["answer"]
@@ -259,15 +259,15 @@ async def test_acting_on_another_employee_is_refused_in_the_graph():
     script = [
         FakeMessage("workflow"),
         FakeMessage(tool_calls=[tool_call("create_mock_hr_ticket", {
-            "employee_id": "E-1055", "category": "equipment", "summary": "laptop"})]),
+            "employee_id": "E1006", "category": "equipment", "summary": "laptop"})]),
         FakeMessage("done"),
     ]
     async with connected() as client:
-        out = await answer("file a ticket for E-1055", client=client,
-                           chat_model=FakeChat(script), employee_id="E-1043")
+        out = await answer("file a ticket for E1006", client=client,
+                           chat_model=FakeChat(script), employee_id="E1001")
 
     assert out["basis"] == "refusal"
-    assert "E-1055" in out["answer"]
+    assert "E1006" in out["answer"]
     assert out["requires_confirmation"] is False
 
 
@@ -276,9 +276,9 @@ async def test_confirm_token_never_appears_in_the_rendered_trace():
     script = [
         FakeMessage("workflow"),
         FakeMessage(tool_calls=[tool_call("create_mock_hr_ticket", {
-            "employee_id": "E-1043", "category": "equipment", "summary": "laptop"})]),
+            "employee_id": "E1001", "category": "equipment", "summary": "laptop"})]),
     ]
     async with connected() as client:
         out = await answer("file it", client=client, chat_model=FakeChat(script),
-                           employee_id="E-1043", confirm_token="cf_supersecret")
+                           employee_id="E1001", confirm_token="cf_supersecret")
     assert "cf_supersecret" not in str(out["trace"])
