@@ -1,0 +1,42 @@
+[
+  {
+    "ticket_id": "TCK-10021",
+    "employee_id": "E1006",
+    "category": "Remote Work / Location Change",
+    "subject": "Request to work from Lisbon, Portugal for 6 weeks (family visit)",
+    "status": "open",
+    "created_date": "2026-09-15",
+    "assigned_to": "E1001",
+    "notes": "Employee requests Sep 28 - Nov 6 (approx. 30 business days) working remotely from Portugal. Exceeds the 20-business-day International Remote Work Exception cap in TAX-5/REMOTE-WORK-4; pending review."
+  },
+  {
+    "ticket_id": "TCK-10014",
+    "employee_id": "E1009",
+    "category": "Equipment/IT Coordination",
+    "subject": "Second monitor request for home office",
+    "status": "resolved",
+    "created_date": "2026-08-02",
+    "assigned_to": "IT-Helpdesk",
+    "notes": "Approved and shipped per EQ-2."
+  },
+  {
+    "ticket_id": "TCK-10009",
+    "employee_id": "E1008",
+    "category": "Benefits",
+    "subject": "Question about FSA vs HSA eligibility",
+    "status": "resolved",
+    "created_date": "2026-06-11",
+    "assigned_to": "E1001",
+    "notes": "Explained BEN-5 eligibility; employee is on PPO plan, enrolled in Healthcare FSA."
+  },
+  {
+    "ticket_id": "TCK-10002",
+    "employee_id": "E1007",
+    "category": "Leave Request",
+    "subject": "Bereavement leave - grandparent",
+    "status": "closed",
+    "created_date": "2026-03-04",
+    "assigned_to": "E1001",
+    "notes": "Approved 2 paid days per LEAVE-5."
+  }
+]
