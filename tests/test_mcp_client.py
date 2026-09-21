@@ -102,7 +102,10 @@ async def test_successful_call_returns_payload_and_latency():
     async with connected() as client:
         call = await client.call("lookup_employee_profile", employee_id="E-1043")
         assert call.ok
-        assert call.payload["name"] == "Dana Whitfield"
+        # Assert on the id, not the display name -- renaming a fixture employee is
+        # cosmetic and should not break the transport test.
+        assert call.payload["employee_id"] == "E-1043"
+        assert call.payload["name"]
         assert call.latency_ms >= 0
 
 

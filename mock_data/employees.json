@@ -1,0 +1,53 @@
+{
+  "_comment": "Synthetic. Muppet names are deliberate -- the brief requires mock data be clearly synthetic, and no one mistakes these for real employee records. 8 employees, 3 locations, 2 managers (E-1002, E-1010), all three employment types.",
+  "employees": {
+    "E-1010": {
+      "employee_id": "E-1010", "name": "Scooter", "role": "VP, People Operations",
+      "employment_type": "full_time", "location": "Pittsburgh, PA",
+      "manager_id": null, "manager_name": null,
+      "hire_date": "2018-02-05", "tenure_months": 103
+    },
+    "E-1002": {
+      "employee_id": "E-1002", "name": "Kermit T. Frog", "role": "Director, Field Operations",
+      "employment_type": "full_time", "location": "Pittsburgh, PA",
+      "manager_id": "E-1010", "manager_name": "Scooter",
+      "hire_date": "2020-05-18", "tenure_months": 76
+    },
+    "E-1043": {
+      "employee_id": "E-1043", "name": "Fozzie Bear", "role": "Senior Analyst",
+      "employment_type": "full_time", "location": "Pittsburgh, PA",
+      "manager_id": "E-1002", "manager_name": "Kermit T. Frog",
+      "hire_date": "2023-03-13", "tenure_months": 42
+    },
+    "E-1055": {
+      "employee_id": "E-1055", "name": "Miss Piggy", "role": "Communications Lead",
+      "employment_type": "full_time", "location": "Pittsburgh, PA",
+      "manager_id": "E-1002", "manager_name": "Kermit T. Frog",
+      "hire_date": "2022-09-06", "tenure_months": 48
+    },
+    "E-1061": {
+      "employee_id": "E-1061", "name": "Gonzo", "role": "Field Technician",
+      "employment_type": "full_time", "location": "Columbus, OH",
+      "manager_id": "E-1002", "manager_name": "Kermit T. Frog",
+      "hire_date": "2024-01-22", "tenure_months": 32
+    },
+    "E-1077": {
+      "employee_id": "E-1077", "name": "Rowlf the Dog", "role": "Field Technician",
+      "employment_type": "part_time", "location": "Columbus, OH",
+      "manager_id": "E-1002", "manager_name": "Kermit T. Frog",
+      "hire_date": "2026-06-01", "tenure_months": 3
+    },
+    "E-1084": {
+      "employee_id": "E-1084", "name": "Beaker", "role": "Lab Technician",
+      "employment_type": "full_time", "location": "Columbus, OH",
+      "manager_id": "E-1010", "manager_name": "Scooter",
+      "hire_date": "2021-11-15", "tenure_months": 58
+    },
+    "E-1099": {
+      "employee_id": "E-1099", "name": "Rizzo the Rat", "role": "Contract Designer",
+      "employment_type": "contractor", "location": "Remote - Austin, TX",
+      "manager_id": "E-1010", "manager_name": "Scooter",
+      "hire_date": "2026-01-15", "tenure_months": 8
+    }
+  }
+}

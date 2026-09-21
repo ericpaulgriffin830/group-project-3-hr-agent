@@ -1,0 +1,27 @@
+{
+  "_comment": "Three eligibility states on purpose: eligible (full-time), a live 90-day waiting period (part-time), and never eligible (contractor). The escalation path needs something real to trigger on.",
+  "benefits": {
+    "E-1010": {"elections": [{"plan": "PPO Medical", "tier": "family", "status": "active"},
+                             {"plan": "Dental", "tier": "family", "status": "active"},
+                             {"plan": "Vision", "tier": "family", "status": "active"}],
+               "eligible": true, "waiting_period_days": 0, "eligibility_date": "2018-03-01"},
+    "E-1002": {"elections": [{"plan": "PPO Medical", "tier": "employee+spouse", "status": "active"},
+                             {"plan": "Dental", "tier": "employee+spouse", "status": "active"}],
+               "eligible": true, "waiting_period_days": 0, "eligibility_date": "2020-06-01"},
+    "E-1043": {"elections": [{"plan": "PPO Medical", "tier": "employee+spouse", "status": "active"},
+                             {"plan": "Dental", "tier": "employee", "status": "active"}],
+               "eligible": true, "waiting_period_days": 0, "eligibility_date": "2023-04-01"},
+    "E-1055": {"elections": [{"plan": "HDHP Medical", "tier": "employee", "status": "active"},
+                             {"plan": "Vision", "tier": "employee", "status": "active"}],
+               "eligible": true, "waiting_period_days": 0, "eligibility_date": "2022-10-01"},
+    "E-1061": {"elections": [{"plan": "PPO Medical", "tier": "employee", "status": "active"}],
+               "eligible": true, "waiting_period_days": 0, "eligibility_date": "2024-02-01"},
+    "E-1077": {"elections": [], "eligible": false, "waiting_period_days": 90,
+               "eligibility_date": "2026-08-30"},
+    "E-1084": {"elections": [{"plan": "PPO Medical", "tier": "employee+children", "status": "active"},
+                             {"plan": "Dental", "tier": "employee+children", "status": "pending"}],
+               "eligible": true, "waiting_period_days": 0, "eligibility_date": "2021-12-01"},
+    "E-1099": {"elections": [], "eligible": false, "waiting_period_days": 0,
+               "eligibility_date": null}
+  }
+}

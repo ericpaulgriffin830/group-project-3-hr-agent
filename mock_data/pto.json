@@ -1,0 +1,19 @@
+{
+  "_comment": "E-1099 is ABSENT on purpose: contractors do not accrue PTO. A zero-filled record would have the agent answer '0 days available', implying he could earn some. The absence is what makes check_pto_balance's no_pto_record branch reachable.",
+  "pto": {
+    "E-1010": {"accrued_days": 25.0, "used_days": 8.0, "available_days": 17.0,
+               "blackout_dates": ["2026-12-22", "2026-12-23"], "accrual_rate": 2.0},
+    "E-1002": {"accrued_days": 22.0, "used_days": 14.0, "available_days": 8.0,
+               "blackout_dates": ["2026-12-22", "2026-12-23"], "accrual_rate": 1.8},
+    "E-1043": {"accrued_days": 18.0, "used_days": 11.5, "available_days": 6.5,
+               "blackout_dates": ["2026-12-22", "2026-12-23"], "accrual_rate": 1.5},
+    "E-1055": {"accrued_days": 16.0, "used_days": 14.0, "available_days": 2.0,
+               "blackout_dates": ["2026-12-22", "2026-12-23"], "accrual_rate": 1.5},
+    "E-1061": {"accrued_days": 12.0, "used_days": 3.0, "available_days": 9.0,
+               "blackout_dates": ["2026-11-26", "2026-11-27"], "accrual_rate": 1.25},
+    "E-1077": {"accrued_days": 4.0, "used_days": 0.0, "available_days": 4.0,
+               "blackout_dates": [], "accrual_rate": 0.5},
+    "E-1084": {"accrued_days": 20.0, "used_days": 5.0, "available_days": 15.0,
+               "blackout_dates": ["2026-11-26", "2026-11-27"], "accrual_rate": 1.67}
+  }
+}

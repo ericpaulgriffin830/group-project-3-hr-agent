@@ -144,8 +144,10 @@ class EmployeeProfileOut(Strict):
     role: str
     employment_type: EmploymentType
     location: str
-    manager_id: str
-    manager_name: str
+    # None at the top of the org. A VP with no manager is the honest model; the
+    # alternative is a circular reporting line invented to satisfy a type.
+    manager_id: str | None = None
+    manager_name: str | None = None
     hire_date: str
     tenure_months: int
 

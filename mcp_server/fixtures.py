@@ -1,51 +1,37 @@
-"""Canned data for the fixture phase.
+"""Mock structured data, loaded from mock_data/*.json.
 
-Everything here is synthetic. Replaced by mock_data/*.json (Chris) and the real
-RAG index (Rob) later this week. The SHAPES here are Contract A and must not
-drift — Rob and Eric build against them.
+Everything here is synthetic -- the Muppet names are deliberate, since the brief
+requires mock data be clearly synthetic and nobody mistakes Fozzie Bear for a real
+employee record.
+
+The employee/PTO/benefits/ticket data now lives in mock_data/ as JSON, which the
+submission requires as its own directory and which lets Eric's UI and the
+evaluation harness read it without importing this package. POLICY_CHUNKS and
+SECTIONS stay in Python: they are a stand-in for Rob's retrieval index, not mock
+structured data, and they disappear when his index lands.
+
+The SHAPES are Contract A and must not drift -- Rob and Eric build against them.
 """
 
-EMPLOYEES = {
-    "E-1043": {
-        "employee_id": "E-1043", "name": "Dana Whitfield", "role": "Senior Analyst",
-        "employment_type": "full_time", "location": "Pittsburgh, PA",
-        "manager_id": "E-1002", "manager_name": "Priya Raman",
-        "hire_date": "2023-03-13", "tenure_months": 42,
-    },
-    "E-1077": {
-        "employee_id": "E-1077", "name": "Marcus Bell", "role": "Field Technician",
-        "employment_type": "part_time", "location": "Columbus, OH",
-        "manager_id": "E-1002", "manager_name": "Priya Raman",
-        "hire_date": "2026-06-01", "tenure_months": 3,
-    },
-    "E-1099": {
-        "employee_id": "E-1099", "name": "Alex Reyes", "role": "Contract Designer",
-        "employment_type": "contractor", "location": "Remote - Austin, TX",
-        "manager_id": "E-1010", "manager_name": "Sam Okafor",
-        "hire_date": "2026-01-15", "tenure_months": 8,
-    },
-}
+import json
+from pathlib import Path
 
-PTO = {
-    "E-1043": {"accrued_days": 18.0, "used_days": 11.5, "available_days": 6.5,
-               "blackout_dates": ["2026-12-22", "2026-12-23"], "accrual_rate": 1.5},
-    "E-1077": {"accrued_days": 4.0, "used_days": 0.0, "available_days": 4.0,
-               "blackout_dates": [], "accrual_rate": 0.5},
-    # E-1099 (contractor) deliberately has NO entry. A zero-filled record would have
-    # the agent answer "0 days available", which implies he could accrue some; the
-    # true answer is that contractors do not accrue at all. The absence is what makes
-    # check_pto_balance's no_pto_record branch reachable.
-}
+#: The submission requires a mock_data/ directory, and structured data belongs in
+#: data files rather than Python -- Eric's UI and the evaluation harness both read
+#: these without importing our package.
+MOCK_DATA = Path(__file__).resolve().parent.parent / "mock_data"
 
-BENEFITS = {
-    "E-1043": {"elections": [{"plan": "PPO Medical", "tier": "employee+spouse", "status": "active"},
-                             {"plan": "Dental", "tier": "employee", "status": "active"}],
-               "eligible": True, "waiting_period_days": 0, "eligibility_date": "2023-04-01"},
-    "E-1077": {"elections": [], "eligible": False, "waiting_period_days": 90,
-               "eligibility_date": "2026-08-30"},
-    "E-1099": {"elections": [], "eligible": False, "waiting_period_days": 0,
-               "eligibility_date": None},
-}
+
+def _load(name: str, key: str) -> dict | list:
+    """Read one mock_data file. Keys starting with '_' are notes, not data."""
+    with open(MOCK_DATA / name) as fh:
+        return json.load(fh)[key]
+
+
+EMPLOYEES: dict = _load("employees.json", "employees")
+PTO: dict = _load("pto.json", "pto")
+BENEFITS: dict = _load("benefits.json", "benefits")
+TICKETS: list = _load("tickets.json", "tickets")
 
 # Stand-in for Rob's index. Keyed loosely so fixture search returns something sane.
 POLICY_CHUNKS = [
@@ -77,4 +63,19 @@ SECTIONS = {
     ("pto-and-leave", "1.3"): "PTO requests of three or more consecutive days require manager approval "
                               "submitted at least five business days in advance. Approval is not "
                               "automatic and depends on team coverage.",
+    # Every section a chunk advertises must be fetchable. Search results that name a
+    # section get_policy_section cannot return send the agent round the loop for
+    # nothing -- it burns the step budget and reads badly in a demo trace.
+    ("pto-and-leave", "1.7"): "PTO is not granted during posted blackout periods except in cases of "
+                              "documented emergency approved by a department head. Blackout periods "
+                              "are published at least 60 days in advance.",
+    ("multi-state-work-and-tax", "2.1"): "Work performed in a non-registered state beyond 30 consecutive "
+                                         "days may create employer tax nexus. HR must be notified before "
+                                         "travel begins so payroll withholding can be adjusted.",
+    ("data-security", "5.4"): "Company data may only be accessed over managed devices with full-disk "
+                              "encryption and an active VPN when outside the corporate network. "
+                              "Personal devices require an approved BYOD attestation on file.",
+    ("benefits-overview", "4.1"): "Full-time employees are eligible for benefits from date of hire. "
+                                  "Part-time employees become eligible after a 90-day waiting period. "
+                                  "Contractors are not eligible for company benefits.",
 }

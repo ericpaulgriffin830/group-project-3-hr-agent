@@ -209,3 +209,25 @@ async def test_envelope_matches_contract_b():
 async def test_graph_compiles_without_a_live_model():
     async with connected() as client:
         assert build_graph(client, FakeChat([FakeMessage("policy_qa")])) is not None
+
+
+async def test_a_model_failure_does_not_take_the_turn_down():
+    """Observed live: Groq 400 output_parse_failed on gpt-oss.
+
+    The model emits reasoning prose where a tool call belongs and the provider
+    rejects it. Intermittent, and on 10/1 an unhandled raise is a dead demo.
+    """
+    class Exploding(FakeChat):
+        async def ainvoke(self, messages):
+            if any(m.get("role") == "system" and "route HR questions" in m["content"]
+                   for m in messages):
+                return FakeMessage("workflow")
+            raise RuntimeError("Error code: 400 - output_parse_failed")
+
+    async with connected() as client:
+        out = await answer("anything", client=client,
+                           chat_model=Exploding([FakeMessage("workflow")]))
+
+    assert out["answer"]
+    assert any(s["type"] == "guardrail" and s.get("status") == "error"
+               for s in out["trace"])

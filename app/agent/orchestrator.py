@@ -169,7 +169,24 @@ def build_graph(client: MCPClient, chat_model: Any):
         }
 
     async def agent(state: AgentState) -> dict:
-        result = await bound.ainvoke(state["messages"])
+        try:
+            result = await bound.ainvoke(state["messages"])
+        except Exception as exc:
+            # Observed against Groq + gpt-oss: HTTP 400 output_parse_failed, where
+            # the model emits reasoning prose in place of a tool call and the
+            # provider's parser rejects it. It is intermittent and it must not take
+            # the turn down -- the brief requires graceful failure, and on 10/1 a
+            # raised exception is a dead demo. Fall through to synthesis with
+            # whatever evidence is already gathered.
+            return {
+                "messages": state["messages"] + [
+                    {"role": "assistant", "content": ""}],
+                "trace": _trace(state, "guardrail",
+                                result_summary=f"model call failed: "
+                                               f"{type(exc).__name__}",
+                                status="error"),
+            }
+
         message: dict[str, Any] = {"role": "assistant",
                                    "content": result.content or ""}
         if getattr(result, "tool_calls", None):
@@ -292,6 +309,12 @@ def build_graph(client: MCPClient, chat_model: Any):
             state.get("intent", "policy_qa"), "synthesize")
 
     def after_agent(state: AgentState) -> str:
+        """No tool calls -- either the model is done, or its call failed above.
+
+        Both end the turn: retrying a model that just produced unparseable output
+        tends to produce it again, and the step budget is better spent answering
+        from the evidence already gathered.
+        """
         return "tools" if state["messages"][-1].get("tool_calls") else "synthesize"
 
     def after_tools(state: AgentState) -> str:
