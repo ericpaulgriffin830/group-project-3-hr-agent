@@ -138,14 +138,11 @@ def test_records_validate_against_contract_a():
 
 # ---------------------------------------------------- the demo needs these
 
-@pytest.mark.xfail(reason="Eric's dataset has no balance below 3.0 days, so demo "
-                          "Task B has no 'no' case. Raised with him 2026-09-21.",
-                   strict=False)
 def test_someone_can_take_three_days_and_someone_cannot():
     """Demo Task B is only interesting if the answer is not always yes.
 
-    Every balance in the current dataset is >= 3.0, so "can I take three days?"
-    is yes for everyone and the workflow never exercises its refusal path.
+    Landed 2026-09-22: E1008 sits at 1.5 days, so the workflow exercises its
+    refusal path against a real record.
     """
     balances = [p["available_days"] for p in fixtures.PTO.values()]
     assert any(b >= 3 for b in balances)
@@ -158,16 +155,46 @@ def test_a_live_waiting_period_exists():
                for b in fixtures.BENEFITS.values())
 
 
-@pytest.mark.xfail(reason="No blackout dates in mock_data/pto_balances.json. "
-                          "Contract A declares the field and Task B needs it. "
-                          "Raised with Eric 2026-09-21.", strict=False)
-def test_blackout_dates_exist_for_the_pto_workflow():
-    """Task B was specced to turn on blackout periods.
+def test_blackout_periods_reach_the_pto_workflow():
+    """Task B turns on blackout periods. Landed 2026-09-22."""
+    assert any(p["blackout_periods"] for p in fixtures.PTO.values())
 
-    The PTO-HOLIDAYS policy describes them, but no employee record carries dates,
-    so the agent can cite the rule and never apply it to anyone.
+
+def test_a_department_blackout_only_binds_that_department():
+    """Scope is the whole point of the structure.
+
+    Returning a Consulting Delivery client go-live to a Data Engineer would have
+    the agent warn them off dates that do not apply -- confidently wrong, and
+    contradicted by the record a grader can check.
     """
-    assert any(p["blackout_dates"] for p in fixtures.PTO.values())
+    dept_blackouts = [b for b in fixtures.BLACKOUTS if b["scope"] == "department"]
+    assert dept_blackouts, "no department-scoped blackout to test"
+    target = dept_blackouts[0]["department"]
+
+    inside = [e for e, d in fixtures._DEPARTMENT.items() if d == target]
+    outside = [e for e, d in fixtures._DEPARTMENT.items() if d != target]
+    assert inside and outside
+
+    ids_for = lambda eid: {b["blackout_id"] for b in fixtures._blackouts_for(eid)}
+    assert dept_blackouts[0]["blackout_id"] in ids_for(inside[0])
+    assert dept_blackouts[0]["blackout_id"] not in ids_for(outside[0])
+
+
+def test_company_wide_blackouts_bind_everyone():
+    company = [b for b in fixtures.BLACKOUTS if b["scope"] == "company_wide"]
+    assert company
+    for eid in fixtures.EMPLOYEES:
+        got = {b["blackout_id"] for b in fixtures._blackouts_for(eid)}
+        assert company[0]["blackout_id"] in got, eid
+
+
+def test_blackouts_cite_a_section_that_actually_exists():
+    """A blackout citing a section the corpus lacks is an unverifiable claim."""
+    for b in fixtures.BLACKOUTS:
+        ref = b.get("policy_section_ref")
+        if ref:
+            assert any(sid == ref for _, sid in fixtures.SECTIONS), \
+                f"{b['blackout_id']} cites missing section {ref}"
 
 
 # ------------------------------------------- fixture-phase policy consistency

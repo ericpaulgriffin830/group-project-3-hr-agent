@@ -52,6 +52,11 @@ def search_policy_documents(query: str, k: int = 5, doc_filter: list[str] | None
 
     Use this for any question about what company policy says. Returns passages
     with the document and section they came from, so the answer can cite them.
+
+    doc_filter, when given, must use these exact document ids:
+    BENEFITS, CONDUCT, EQUIPMENT, EXPENSE, HANDBOOK-OVERVIEW, HR-OPS, INFOSEC,
+    LEAVE, ONBOARDING, PTO-HOLIDAYS, REMOTE-WORK, TAX-LOCATION.
+    Omit doc_filter to search everything, which is usually what you want.
     """
     if not query or not query.strip():
         return _err("empty_query", "A non-empty query is required.")
@@ -60,8 +65,13 @@ def search_policy_documents(query: str, k: int = 5, doc_filter: list[str] | None
     if doc_filter:
         chunks = [c for c in chunks if c["doc_id"] in doc_filter]
         if not chunks:
+            # Name the valid ids so a wrong guess is corrected in one step rather
+            # than re-guessed. Each wasted round trip spends the tool budget and
+            # shows up as noise in the demo trace.
+            available = sorted({c["doc_id"] for c in fixtures.POLICY_CHUNKS})
             return _err("no_matching_documents",
-                        f"No indexed documents match filter {doc_filter}.")
+                        f"No indexed documents match filter {doc_filter}. "
+                        f"Valid doc_ids: {', '.join(available)}.")
 
     terms = {t for t in query.lower().split() if len(t) > 3}
     ranked = sorted(

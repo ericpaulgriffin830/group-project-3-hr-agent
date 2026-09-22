@@ -46,6 +46,23 @@ _OFFICE_ROWS: list[dict] = _read(MOCK_DATA / "offices.json")
 
 OFFICES: dict = _by_id(_OFFICE_ROWS, "office_id")
 TICKETS: list = _read(MOCK_DATA / "hr_tickets.json")
+BLACKOUTS: list = _read(MOCK_DATA / "blackout_periods.json")
+
+#: employee_id -> department, for scoping blackouts.
+_DEPARTMENT: dict = {r["employee_id"]: r.get("department") for r in _EMPLOYEE_ROWS}
+
+
+def _blackouts_for(employee_id: str) -> list[dict]:
+    """Only the blackouts that actually bind this employee.
+
+    A department blackout returned to everyone would have the agent warn a Data
+    Engineer about a Consulting Delivery client go-live -- confidently wrong, and
+    the kind of wrong a grader notices because it contradicts the record.
+    """
+    department = _DEPARTMENT.get(employee_id)
+    return [b for b in BLACKOUTS
+            if b.get("scope") == "company_wide"
+            or (b.get("scope") == "department" and b.get("department") == department)]
 
 
 def _location(row: dict) -> str:
@@ -107,7 +124,7 @@ def _pto() -> dict:
             "used_days": float(row["used_ytd_days"]),
             "available_days": float(row["balance_days"]),
             "carryover_days": float(row.get("carryover_days_from_prior_year", 0)),
-            "blackout_dates": row.get("blackout_dates") or [],
+            "blackout_periods": _blackouts_for(row["employee_id"]),
             "accrual_rate": float(row["accrual_rate_days_per_month"]),
             "notes": row.get("notes") or "",
         }

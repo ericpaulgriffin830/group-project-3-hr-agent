@@ -95,6 +95,27 @@ class PolicyRef(Strict):
     section: str
 
 
+class BlackoutPeriod(Strict):
+    """A window when PTO is restricted.
+
+    Structured rather than a flat list of dates because the answer depends on
+    more than "is my date in the list": the scope decides whether it applies to
+    this employee at all, and the notice period and approval chain are what the
+    employee actually has to act on. `policy_section_ref` lets the answer cite the
+    governing section instead of asserting the rule.
+    """
+
+    blackout_id: str
+    scope: str
+    department: str | None = None
+    start_date: str
+    end_date: str
+    reason: str
+    policy_section_ref: str | None = None
+    approval_required: str | None = None
+    advance_notice_business_days: int | None = None
+
+
 class BenefitElection(Strict):
     plan: str
     tier: str
@@ -169,7 +190,10 @@ class PtoBalanceOut(Strict):
     accrued_days: float
     used_days: float
     available_days: float
-    blackout_dates: list[str]
+    # Replaced the flat blackout_dates list 2026-09-22, when Eric's
+    # blackout_periods.json landed. Keeping both would be two representations of
+    # one fact, which is exactly how they drift apart.
+    blackout_periods: list[BlackoutPeriod]
     accrual_rate: float
     # From Eric's accrual records. `notes` carries the human caveat his data
     # already wrote down -- pro-rated accrual, a leave hold -- which an answer

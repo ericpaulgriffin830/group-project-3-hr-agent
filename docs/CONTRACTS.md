@@ -247,7 +247,14 @@ The brief asks for 30–120 pages and at least two formats; both are met.
 fetches by that id, and `corpus/manifest.json` lists every one. Matching on the id
 rather than the heading text means a reworded heading does not break retrieval.
 
-**Known gaps, raised with Eric 2026-09-21** — these are corpus edits, not code:
+**All three gaps closed 2026-09-22.** `REMOTE-WORK` now cross-references
+`TAX-LOCATION`; `mock_data/blackout_periods.json` carries scoped blackout windows;
+and E1008 sits at 1.5 days so Task B exercises its refusal path. `blackout_dates:
+list[str]` in Contract A is replaced by structured `blackout_periods` — scope
+decides whether a window binds an employee at all, and the notice period and
+approval chain are what they actually have to act on.
+
+**Original gaps, for the record — raised with Eric 2026-09-21** — these are corpus edits, not code:
 
 1. `REMOTE-WORK` cross-references `INFOSEC` and `EQUIPMENT` but **not
    `TAX-LOCATION`**. Demo Task A and rubric item 3's multi-document question were
