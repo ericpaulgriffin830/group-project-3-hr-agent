@@ -221,3 +221,32 @@ def test_the_multi_document_question_is_answerable_from_the_corpus():
     """
     docs = {c["doc_id"] for c in fixtures.POLICY_CHUNKS}
     assert {"REMOTE-WORK", "TAX-LOCATION", "INFOSEC"} <= docs
+
+
+# --------------------------------------------- fixture-phase retrieval quality
+
+def test_retrieval_spans_documents_for_a_multi_policy_query():
+    """Rubric item 3 is impossible if top-k is always one document.
+
+    REMOTE-WORK has nine sections all containing "work" and "remote"; before the
+    per-document cap it filled every slot and a question about working from
+    another state never retrieved the tax policy.
+    """
+    ranked = fixtures.rank_chunks(fixtures.POLICY_CHUNKS,
+                                  "working from another state tax implications", 5)
+    assert len({c["doc_id"] for c in ranked}) >= 2
+    assert "TAX-LOCATION" in {c["doc_id"] for c in ranked}
+
+
+def test_no_single_document_can_flood_the_results():
+    ranked = fixtures.rank_chunks(fixtures.POLICY_CHUNKS, "remote work policy", 5)
+    from collections import Counter
+    worst = Counter(c["doc_id"] for c in ranked).most_common(1)[0][1]
+    assert worst <= fixtures.MAX_CHUNKS_PER_DOC
+
+
+def test_rare_terms_outrank_common_ones():
+    """"work" is in nearly every policy; "nexus" is in one. Counting them equally
+    is what ranked four remote-work sections above the tax policy."""
+    ranked = fixtures.rank_chunks(fixtures.POLICY_CHUNKS, "nexus", 3)
+    assert ranked and ranked[0]["doc_id"] == "TAX-LOCATION"

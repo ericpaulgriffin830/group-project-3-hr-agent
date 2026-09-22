@@ -282,3 +282,53 @@ async def test_confirm_token_never_appears_in_the_rendered_trace():
         out = await answer("file it", client=client, chat_model=FakeChat(script),
                            employee_id="E1001", confirm_token="cf_supersecret")
     assert "cf_supersecret" not in str(out["trace"])
+
+
+# --------------------------------------------------- citation selection
+
+from app.agent.orchestrator import _diverse_citations  # noqa: E402
+
+
+def _chunk(doc, score, section="S-1"):
+    return {"doc_id": doc, "title": doc, "section": section,
+            "snippet": "...", "score": score}
+
+
+def test_citations_are_chosen_by_score_first():
+    evidence = [_chunk("A", 0.9), _chunk("B", 0.8), _chunk("A", 0.7)]
+    got = _diverse_citations(evidence, limit=2)
+    assert [c["score"] for c in got] == [0.9, 0.8]
+
+
+def test_a_second_document_is_admitted_when_it_earns_it():
+    """Rubric item 3 needs a multi-document answer to actually cite two documents.
+
+    All five top chunks coming from one document would cite one source even when
+    a second policy genuinely bears on the answer.
+    """
+    evidence = [_chunk("REMOTE-WORK", 0.9 - i / 100) for i in range(5)]
+    evidence.append(_chunk("TAX-LOCATION", 0.6))
+    got = _diverse_citations(evidence, limit=5)
+    assert {c["doc_id"] for c in got} == {"REMOTE-WORK", "TAX-LOCATION"}
+
+
+def test_a_weak_second_document_is_not_admitted():
+    """Precision beats spread.
+
+    An earlier version round-robined across every document present, which made a
+    PTO question cite REMOTE-WORK and TAX-LOCATION. Citation accuracy scores
+    whether the citation is right, not how varied it is.
+    """
+    evidence = [_chunk("PTO-HOLIDAYS", 0.9 - i / 100) for i in range(5)]
+    evidence.append(_chunk("REMOTE-WORK", 0.05))
+    got = _diverse_citations(evidence, limit=5)
+    assert {c["doc_id"] for c in got} == {"PTO-HOLIDAYS"}
+
+
+def test_single_document_evidence_stays_single_document():
+    evidence = [_chunk("PTO-HOLIDAYS", 0.9), _chunk("PTO-HOLIDAYS", 0.8)]
+    assert {c["doc_id"] for c in _diverse_citations(evidence, limit=5)} == {"PTO-HOLIDAYS"}
+
+
+def test_no_evidence_yields_no_citations():
+    assert _diverse_citations([], limit=5) == []

@@ -217,3 +217,91 @@ def _section_text(body: str, section_id: str) -> str:
 
 
 POLICY_CHUNKS, SECTIONS = _corpus()
+
+
+# ------------------------------------------------- fixture-phase ranking
+
+#: Most chunks any single document may contribute to one result set.
+#: Without this, the document with the most sections wins every query: REMOTE-WORK
+#: has nine sections all containing "work" and "remote", so it filled all five
+#: slots and a question spanning remote work AND tax law retrieved only the first.
+#: The brief requires "at least one complex question requiring retrieval from
+#: multiple policy documents" -- that is impossible if top-k is single-document.
+#: Rob's real retriever needs this property too, whatever its scoring.
+MAX_CHUNKS_PER_DOC = 2
+
+_STOPWORDS = frozenset(
+    ("the", "and", "for", "that", "this", "with", "from", "have", "can", "are",
+     "what", "when", "does", "do", "i", "my", "me", "a", "an", "is", "it", "to",
+     "of", "in", "on", "if", "be", "as", "at", "or", "any")
+)
+
+
+@lru_cache(maxsize=1)
+def _document_frequency() -> dict:
+    """How many chunks each term appears in. Rare terms are the informative ones."""
+    from collections import Counter
+
+    df: Counter = Counter()
+    for chunk in POLICY_CHUNKS:
+        text = f"{chunk['snippet']} {chunk['title']} {chunk['section']}".lower()
+        df.update(set(_terms(text)))
+    return dict(df)
+
+
+def _terms(text: str) -> list[str]:
+    import re
+
+    return [t for t in re.findall(r"[a-z0-9]+", text.lower())
+            if len(t) > 2 and t not in _STOPWORDS]
+
+
+def _score(chunk: dict, query_terms: set[str]) -> float:
+    """Sum of inverse document frequency over the query terms this chunk matches.
+
+    IDF rather than a raw count because "work" appears in almost every policy and
+    "nexus" in one. Counting them equally is what let a tax question rank four
+    remote-work sections above the tax policy.
+    """
+    import math
+
+    df = _document_frequency()
+    total = max(len(POLICY_CHUNKS), 1)
+    text = set(_terms(f"{chunk['snippet']} {chunk['title']} {chunk['section']}"))
+    return sum(math.log(total / (1 + df.get(term, 0)))
+               for term in query_terms if term in text)
+
+
+def rank_chunks(chunks: list[dict], query: str, k: int) -> list[dict]:
+    """Rank by IDF, then spread the result across documents.
+
+    Two passes: take the best `MAX_CHUNKS_PER_DOC` from each document in score
+    order, then backfill from what is left if k is not yet met. A single document
+    can still dominate when it genuinely is the only relevant one -- the cap only
+    binds when other documents also matched.
+    """
+    query_terms = set(_terms(query))
+    scored = sorted(
+        ({**c, "score": round(_score(c, query_terms), 4)} for c in chunks),
+        key=lambda c: c["score"],
+        reverse=True,
+    )
+
+    picked: list[dict] = []
+    per_doc: dict = {}
+    for chunk in scored:
+        if chunk["score"] <= 0:
+            continue
+        if per_doc.get(chunk["doc_id"], 0) >= MAX_CHUNKS_PER_DOC:
+            continue
+        per_doc[chunk["doc_id"]] = per_doc.get(chunk["doc_id"], 0) + 1
+        picked.append(chunk)
+        if len(picked) == k:
+            return picked
+
+    for chunk in scored:
+        if chunk not in picked:
+            picked.append(chunk)
+            if len(picked) == k:
+                break
+    return picked[:k]

@@ -73,16 +73,8 @@ def search_policy_documents(query: str, k: int = 5, doc_filter: list[str] | None
                         f"No indexed documents match filter {doc_filter}. "
                         f"Valid doc_ids: {', '.join(available)}.")
 
-    terms = {t for t in query.lower().split() if len(t) > 3}
-    ranked = sorted(
-        chunks,
-        key=lambda c: (
-            sum(t in (c["snippet"] + c["title"] + c["section"]).lower() for t in terms),
-            c["score"],
-        ),
-        reverse=True,
-    )
-    return {"chunks": ranked[: max(1, k)], "retrieval_mode": "fixture"}
+    ranked = fixtures.rank_chunks(chunks, query, max(1, k))
+    return {"chunks": ranked, "retrieval_mode": "fixture"}
 
 
 @mcp.tool()

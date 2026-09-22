@@ -66,6 +66,21 @@ Use the provided tools to gather what you need. Rules:
 - Always retrieve the governing policy. Never answer policy from memory.
 - Never invent an employee id, a balance, or a policy statement.
 - When you have enough to answer, stop calling tools and reply in plain text.
+
+SEARCH BROADLY FIRST. Most real HR questions are governed by more than one policy,
+and answering from only the most obvious one gives the employee a confidently
+incomplete answer. Run your first search with NO doc_filter. Only filter once you
+know which documents matter.
+
+Questions that routinely span documents:
+- Working from another state or country -> remote work AND tax/work location AND
+  information security AND equipment.
+- Time off -> PTO/holidays AND any leave policy that applies.
+- Expenses while travelling -> expense AND travel-related sections.
+- Anything about conduct or a complaint -> conduct AND HR escalation procedures.
+
+Before you stop, ask whether a second policy also bears on the answer. If it does,
+search for it.
 """
 
 
@@ -103,6 +118,45 @@ def _trace(state: AgentState, kind: str, **fields: Any) -> list[dict]:
     return trace.as_list()
 
 
+def _diverse_citations(evidence: list[dict], limit: int = 5) -> list[dict]:
+    """Best chunks by score, nudged to include a second document when one earns it.
+
+    Precision first. An earlier version round-robined across every document that
+    appeared in the evidence, which did widen a remote-work answer to cite the tax
+    policy -- and also made a PTO question cite REMOTE-WORK and TAX-LOCATION,
+    because "spread the citations" and "cite the right things" are not the same
+    goal. Citation accuracy scores the second one.
+
+    So: take the top `limit` by score. If they all came from one document, give up
+    the weakest slot to the best chunk from the next document, but only if that
+    chunk is within RELEVANCE_FLOOR of the best chunk overall. A genuinely
+    single-document question keeps citing one document.
+    """
+    RELEVANCE_FLOOR = 0.4
+
+    ranked = sorted(evidence, key=lambda c: c.get("score", 0), reverse=True)
+    if not ranked:
+        return []
+
+    picked = ranked[:limit]
+    if len({c.get("doc_id") for c in picked}) > 1:
+        return picked
+
+    best_score = ranked[0].get("score", 0) or 1
+    incumbent = picked[0].get("doc_id")
+    runner_up = next(
+        (c for c in ranked
+         if c.get("doc_id") != incumbent
+         and c.get("score", 0) >= best_score * RELEVANCE_FLOOR),
+        None,
+    )
+    if runner_up is not None and len(picked) == limit:
+        picked = picked[: limit - 1] + [runner_up]
+    elif runner_up is not None:
+        picked = picked + [runner_up]
+    return picked
+
+
 def _synthesize(question: str, evidence: list[dict], tool_results: list[dict],
                 mode: str) -> dict:
     """Contract C's seam -- Rob's `app/rag/answer.py`.
@@ -115,7 +169,7 @@ def _synthesize(question: str, evidence: list[dict], tool_results: list[dict],
     try:
         from app.rag.answer import synthesize  # type: ignore
     except ImportError:
-        citations = evidence[:5]
+        citations = _diverse_citations(evidence, limit=5)
         return {
             "answer": (
                 "Evidence gathered, but answer synthesis is not wired up yet "
