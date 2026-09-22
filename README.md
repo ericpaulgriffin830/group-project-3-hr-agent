@@ -62,3 +62,8 @@ uv run python main.py
 - **After every `git pull`, run `uv sync`** so your environment matches any dependency changes teammates made.
 - **Add a dependency with `uv add <package>`** (not `pip install`), then commit both `pyproject.toml` and `uv.lock`.
 - **Continuous integration:** on every push and pull request to `main`, GitHub Actions runs `uv sync --locked` on Windows and macOS and checks that the core libraries import. A red check usually means `uv.lock` is out of sync with `pyproject.toml`.
+
+## Data
+
+- **`corpus/`** — the RAG source corpus: 12 HR policy documents for the fictional company Northbridge Analytics (PTO, remote work, tax/location, expenses, equipment, infosec, benefits, leave, onboarding, conduct, HR ops), in markdown/HTML/plain-text with numbered sections (`PTO-3`, `RW-4`, etc.) for citation. See `corpus/README.md` for the document index and ingestion conventions.
+- **`mock_data/`** — synthetic structured HR data the agent's MCP tools should read from: employees, PTO balances, benefits elections, offices, HR tickets, expense claims, and PTO blackout periods. See `mock_data/README.md` for schemas and the specific edge cases built in for evaluation (e.g. an employee with an insufficient PTO balance, an international remote-work request that exceeds policy limits).
