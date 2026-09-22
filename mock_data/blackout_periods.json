@@ -1,0 +1,24 @@
+[
+  {
+    "blackout_id": "BO-2026-YEAR-END",
+    "scope": "company_wide",
+    "department": null,
+    "start_date": "2026-12-24",
+    "end_date": "2027-01-05",
+    "policy_section_ref": "PTO-9",
+    "reason": "Fiscal year-end close: illustrative calendar rendering of the last 5 business days of December and first 3 business days of January (PTO-9), inclusive of the intervening Christmas Day / New Year's Day holiday closures.",
+    "approval_required": "manager_and_department_head",
+    "advance_notice_business_days": 10
+  },
+  {
+    "blackout_id": "BO-2026-CONSULTING-CLIENT-GOLIVE",
+    "scope": "department",
+    "department": "Consulting Delivery",
+    "start_date": "2026-10-05",
+    "end_date": "2026-10-16",
+    "policy_section_ref": "PTO-9",
+    "reason": "Client go-live support window for an active Consulting Delivery engagement (PTO-9). Announced by the Director of Consulting Delivery more than 30 days in advance per PTO-9.",
+    "approval_required": "manager_and_department_head",
+    "advance_notice_business_days": 10
+  }
+]

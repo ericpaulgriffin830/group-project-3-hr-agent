@@ -61,7 +61,18 @@ For short-term illness or family emergencies where advance notice under PTO-3 is
 
 PTO is intended for short-term, planned, or unplanned time off. Absences expected to last 5 or more consecutive business days for a medical, family, or parental reason should generally be handled under the Leave of Absence Policy (see LEAVE-1) rather than through sequential PTO requests, both because the Leave of Absence Policy provides job protections that this policy does not, and because it allows People Operations to plan for a longer absence appropriately. Employees may use available PTO to cover unpaid portions of an approved leave of absence, as described in LEAVE-7; using PTO in this way draws down the same single PTO bank described in PTO-2, so an employee who exhausts their PTO balance during a leave transitions to unpaid leave status for any remaining unpaid portion of that leave.
 
-## PTO-9 Frequently Encountered Situations
+## PTO-9 Blackout Periods
+
+Certain periods each year carry heavier client and internal deadlines, and PTO requests during these windows are subject to additional review rather than the standard manager-discretion process in PTO-3. Northbridge designates the following as standing blackout periods, reviewed and, if needed, adjusted by People Operations each November for the following calendar year:
+
+- **Fiscal year-end close**: the last 5 business days of December and the first 3 business days of January, company-wide, for all departments.
+- **Department- or client-specific blackout windows**: Consulting Delivery may designate additional blackout dates tied to a specific client's go-live or reporting deadline; these are recorded against the affected employees' records and communicated by the Director of Consulting Delivery at least 30 days in advance.
+
+A PTO request that falls, in whole or in part, within an applicable blackout period is not automatically denied, but requires approval from the employee's manager **and** a Department Head (rather than manager approval alone), and should be submitted at least 10 business days in advance rather than the standard 5 under PTO-3. Department Head approval considers overall team coverage during the blackout window, not just the individual request. An employee whose blackout-period request is denied should be offered the option to take the time immediately before or after the blackout window instead, where feasible.
+
+Blackout periods do not reduce or forfeit any PTO balance; they only add an additional approval step and a longer notice requirement for requests that fall within them.
+
+## PTO-10 Frequently Encountered Situations
 
 The following situations illustrate how the sections above apply together, though they do not modify the policy itself:
 
