@@ -101,9 +101,9 @@
     "eligible": true,
     "accrual_rate_days_per_month": 1.0,
     "accrued_ytd_days": 8.0,
-    "used_ytd_days": 3.5,
+    "used_ytd_days": 6.5,
     "carryover_days_from_prior_year": 0.0,
-    "balance_days": 4.5,
+    "balance_days": 1.5,
     "last_accrual_date": "2026-08-31",
     "notes": null
   },

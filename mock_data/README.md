@@ -18,6 +18,7 @@ they are pre-computed snapshots as of that date).
 | `benefits_elections.json` | JSON | Per-employee benefits eligibility and elections, consistent with BEN-1/BEN-7 |
 | `hr_tickets.json` | JSON | Example HR tickets across several categories from HR-OPS-2 |
 | `expense_claims.csv` | CSV | Example expense claims, including one approved-with-cap and one denied example |
+| `blackout_periods.json` | JSON | Company-wide and department-scoped PTO blackout windows, consistent with PTO-9 |
 
 ## Schemas
 
@@ -97,6 +98,25 @@ assigned_to    string   employee_id or role label (e.g. "IT-Helpdesk")
 notes          string
 ```
 
+### `blackout_periods.json`
+Mirrors PTO-9 (blackout periods require manager + Department Head approval and
+10 business days' notice, rather than the standard PTO-3 process).
+```
+blackout_id                    string   e.g. "BO-2026-YEAR-END"
+scope                          enum     company_wide | department | office
+department                     string|null   set when scope == "department"; matches an employees.json department value
+start_date, end_date           string   YYYY-MM-DD, inclusive
+policy_section_ref             string   always "PTO-9" in this dataset
+reason                         string
+approval_required              string   "manager_and_department_head" in this dataset
+advance_notice_business_days   number
+```
+Two records are included: a company-wide fiscal year-end close window, and a
+Consulting-Delivery-only window tied to a client go-live. A PTO/agent tool
+should check a requested date range against both the company-wide record and
+any record scoped to the requesting employee's `department` (from
+`employees.json`).
+
 ### `expense_claims.csv`
 Columns: `claim_id, employee_id, date, category, description, amount_usd,
 status, policy_section_ref, notes`. `policy_section_ref` points at the
@@ -126,7 +146,15 @@ back to the exact governing policy text.
   24 hrs/week) has prorated PTO accrual and is benefits-eligible only for
   retirement per BEN-7; `EXP-3005` and `EXP-3007` in the expense CSV are
   denied/partially-denied claims that a compliance-checking tool should
-  correctly flag rather than approve.
+  correctly flag rather than approve; `E1008` (Grace Lin) has a PTO balance
+  of **1.5 days**, deliberately below any plausible "a few days off" request,
+  so a PTO-request-guidance task actually has to exercise the insufficient-
+  balance / refusal path rather than always approving; and `blackout_periods.json`
+  gives a "remote work eligibility"-style task a second kind of policy-plus-data
+  reasoning to do — e.g. a PTO request from a Consulting Delivery employee
+  (`E1006`, `E1007`, `E1008`, or `E1010`) dated Oct 5–16, 2026 should trigger
+  the department-scoped blackout in PTO-9, requiring Department Head approval
+  rather than a plain manager sign-off.
 
 ## Regenerating this data
 

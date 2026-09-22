@@ -52,8 +52,8 @@
       "effective_date": "2026-01-05",
       "owner": "People Operations",
       "applies_to": "Full-time and part-time employees; contractors are not eligible",
-      "word_count": 1641,
-      "approx_pages": 3.3,
+      "word_count": 1887,
+      "approx_pages": 3.8,
       "sections": [
         {
           "section_id": "PTO-1",
@@ -89,6 +89,10 @@
         },
         {
           "section_id": "PTO-9",
+          "heading": "Blackout Periods"
+        },
+        {
+          "section_id": "PTO-10",
           "heading": "Frequently Encountered Situations"
         }
       ]
@@ -102,8 +106,8 @@
       "effective_date": "2026-01-05",
       "owner": "People Operations / Legal",
       "applies_to": null,
-      "word_count": 1874,
-      "approx_pages": 3.7,
+      "word_count": 1890,
+      "approx_pages": 3.8,
       "sections": [
         {
           "section_id": "RW-1",
@@ -591,6 +595,6 @@
     }
   ],
   "total_documents": 12,
-  "total_word_count": 16258,
-  "approx_total_pages": 32.5
+  "total_word_count": 16520,
+  "approx_total_pages": 33.0
 }
