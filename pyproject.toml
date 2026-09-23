@@ -5,12 +5,14 @@ description = "Group project: AI RAG App for Human Resources"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "beautifulsoup4",
     "chromadb>=1.5.9",
     "fastembed>=0.8.1",
     "groq>=1.7.0",
     "langchain>=1.4.2",
     "langchain-openai>=1.6.2",
     "langgraph>=1.2.11",
+    "markdownify",
     "mcp>=2.2.0",
     "python-dotenv>=1.2.3",
 ]
