@@ -31,5 +31,5 @@ jobs:
       - name: Verify core libraries import
         run: >
           uv run python -c
-          "import chromadb, langchain, langgraph, sentence_transformers;
+          "import chromadb, langchain, langgraph, fastembed, rank_bm25;
           print('All core dependencies import successfully')"
