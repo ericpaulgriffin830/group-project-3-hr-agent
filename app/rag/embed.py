@@ -9,15 +9,31 @@ fastembed replaces sentence-transformers here (see docs/DEPLOYMENT-NOTES.md and
 pyproject.toml) -- same model id, a fraction of the install footprint.
 EMBED_MODEL defaults to BAAI/bge-small-en-v1.5, pinned in docs/CONTRACTS.md.
 
-Documents and queries are NOT embedded the same way. BGE models are trained with
-an asymmetric convention: a passage is embedded as-is, but a query is embedded
-with an added instruction ("Represent this sentence for searching relevant
-passages: ...") that measurably improves retrieval against passages embedded
-without it. fastembed applies that instruction internally in `query_embed()`;
-`embed()` does not add it. A query run through the wrong method is not merely
-suboptimal -- it degrades silently, with no error to catch it -- so this module
-exposes `embed_documents()` and `embed_query()` as two distinct functions rather
-than one function serving both, so a call site cannot pick the wrong one.
+Documents and queries are embedded through two separate functions,
+embed_documents() and embed_query(), even though -- as currently wired -- they
+produce identical vectors for identical text. BGE models are generally trained
+with an asymmetric convention: a passage is embedded as-is, but a query gets an
+added instruction ("Represent this sentence for searching relevant passages:
+...") that measurably improves retrieval against passages embedded without it.
+For the larger BGE models, and for the older bge-small-en, that instruction
+matters enough that fastembed applies it internally in query_embed(). It does
+not for BAAI/bge-small-en-v1.5, the model actually pinned here: fastembed
+0.8.1's own model registry describes prefixes as "not so necessary" for this
+model (versus "necessary" for bge-small-en), and its query_embed() for this
+model is implemented as a direct call to embed() -- confirmed by reading
+fastembed's source and by test_embed.py's
+test_query_and_document_embeddings_of_same_text_are_currently_identical.
+
+The two functions are kept separate anyway. A query run through the wrong
+method, on a model where the asymmetry IS real, degrades silently with no
+error to catch it -- exactly the failure mode a model swap (a larger BGE
+variant, a different embedding family) could reintroduce. Keeping
+embed_documents()/embed_query() as distinct call sites means that if EMBED_MODEL
+ever changes to a model that needs the instruction, only this module's
+internals need to catch up -- no caller has to know or change, and no caller
+can pick the wrong one. As long as bge-small-en-v1.5 is the pinned model,
+though, this split is insurance against a future change, not a fix for a
+present one.
 
 Model weights download from Hugging Face on first use and cache under
 EMBED_CACHE_DIR (default .fastembed_cache/, git-ignored). That download could
