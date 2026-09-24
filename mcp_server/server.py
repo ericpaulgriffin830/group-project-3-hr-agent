@@ -25,6 +25,26 @@ from mcp.server.mcpserver import MCPServer
 
 from . import fixtures
 
+# Rob's real retrieval backs the two RAG tools. Imported lazily inside the tools
+# rather than at module load: building the index costs seconds and downloads an
+# embedding model, and the MCP server must still start (and CI must still run) on
+# a machine where that has not happened. Falling back to the fixture ranker keeps
+# the tool surface identical either way -- the whole point of Contract A.
+_RETRIEVAL_UNAVAILABLE = None
+
+
+def _real_retrieval():
+    """Rob's retrieve module, or None if the index is not usable here."""
+    global _RETRIEVAL_UNAVAILABLE
+    if _RETRIEVAL_UNAVAILABLE is True:
+        return None
+    try:
+        from app.rag import retrieve as _retrieve
+        return _retrieve
+    except Exception:
+        _RETRIEVAL_UNAVAILABLE = True
+        return None
+
 mcp = MCPServer("hr-tools")
 
 CONFIRM_SALT = "hr-agent-confirm-v1"
@@ -73,6 +93,16 @@ def search_policy_documents(query: str, k: int = 5, doc_filter: list[str] | None
                         f"No indexed documents match filter {doc_filter}. "
                         f"Valid doc_ids: {', '.join(available)}.")
 
+    real = _real_retrieval()
+    if real is not None:
+        try:
+            return real.retrieve(query, k=max(1, k), doc_filter=doc_filter)
+        except Exception:
+            # Degrade to the fixture ranker rather than failing the tool. A tool
+            # that raises here takes the agent's whole turn with it, and the brief
+            # asks for graceful degradation.
+            pass
+
     ranked = fixtures.rank_chunks(chunks, query, max(1, k))
     return {"chunks": ranked, "retrieval_mode": "fixture"}
 
@@ -84,6 +114,15 @@ def get_policy_section(doc_id: str, section_id: str) -> dict:
     Use after search_policy_documents when a snippet is not enough and the full
     section text is needed to answer precisely.
     """
+    real = _real_retrieval()
+    if real is not None:
+        try:
+            got = real.get_section(doc_id, section_id)
+            if got and not got.get("error"):
+                return got
+        except Exception:
+            pass
+
     text = fixtures.SECTIONS.get((doc_id, section_id))
     if text is None:
         return _err("section_not_found",
