@@ -149,17 +149,25 @@ def vector_search(text: str, k: int = 5, doc_filter: list[str] | None = None,
         where=where,
         include=["metadatas", "distances"],
     )
+    ids = result["ids"][0] if result["ids"] else []
     metadatas = result["metadatas"][0] if result["metadatas"] else []
     distances = result["distances"][0] if result["distances"] else []
     return [
         {
+            # chunk_id is NOT part of Contract A's PolicyChunk shape -- it is
+            # carried here so retrieve.py can fuse this leg's ranking against
+            # the BM25 leg's ranking by a stable id. A caller building the
+            # actual tool response should drop it before returning to the
+            # agent, the same way it already would not return `score`'s raw
+            # Chroma distance.
+            "chunk_id": cid,
             "doc_id": meta["doc_id"],
             "title": meta["title"],
             "section": meta["section"],
             "snippet": meta["snippet"],
             "score": round(1.0 - dist, 4),
         }
-        for meta, dist in zip(metadatas, distances)
+        for cid, meta, dist in zip(ids, metadatas, distances)
     ]
 
 
