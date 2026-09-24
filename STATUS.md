@@ -11,7 +11,7 @@ Living file. Update it rather than starting a new one, so there is one place to 
 | # | Requirement | State | Owner |
 |---|---|---|---|
 | 1 | Environment & reproducibility | **Good** — uv, pinned, `.env.example` complete. README still has no deploy or eval instructions | Eric |
-| 2 | Corpus ingestion & indexing | **Done** — 12 docs, 32.5pp, ingest/chunk/embed/store | Rob |
+| 2 | Corpus ingestion & indexing | **Done** — 12 docs, 33pp, ingest/chunk/embed/store | Rob |
 | 3 | RAG | **Half** — hybrid BM25+vector+RRF retrieval works; **`synthesize()` does not exist** | Rob |
 | 4 | Agentic system | **Done** — LangGraph orchestrator, trace, action guardrails | Chris |
 | 5 | MCP server & tools | **Done** — 8 tools, dual transport, real retrieval wired in | Chris |
@@ -27,7 +27,7 @@ Living file. Update it rather than starting a new one, so there is one place to 
 
 ## Landed this week
 
-**Eric** — the full corpus (12 documents, 4 formats, 16,258 words, a manifest with
+**Eric** — the full corpus (12 documents, 4 formats, 16,520 words, a manifest with
 per-document ids and a section index) plus six mock datasets. Then closed all three
 gaps raised against it within a day: the `REMOTE-WORK` → `TAX-LOCATION`
 cross-reference, scoped blackout periods, and a PTO balance low enough that demo
