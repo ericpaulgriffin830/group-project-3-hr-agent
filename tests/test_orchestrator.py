@@ -332,3 +332,24 @@ def test_single_document_evidence_stays_single_document():
 
 def test_no_evidence_yields_no_citations():
     assert _diverse_citations([], limit=5) == []
+
+
+async def test_a_model_failure_in_classify_does_not_take_the_turn_down():
+    """Found live: Groq 429 when the free tier's daily token limit ran out.
+
+    The agent node already survived model failures; classify did not, so the
+    whole turn raised. On 10/1 that is a dead demo, and a rate limit is exactly
+    the thing most likely to happen during a recording.
+    """
+    class Exploding:
+        def bind_tools(self, tools):
+            return self
+
+        async def ainvoke(self, messages):
+            raise RuntimeError("Error code: 429 - rate_limit_exceeded")
+
+    async with connected() as client:
+        out = await answer("How many vacation days do I get?", client=client,
+                           chat_model=Exploding())
+    assert out["answer"]
+    assert out["trace"][0]["result_summary"] == "policy_qa"

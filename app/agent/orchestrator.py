@@ -81,6 +81,20 @@ Questions that routinely span documents:
 
 Before you stop, ask whether a second policy also bears on the answer. If it does,
 search for it.
+
+BUT WHEN THE USER ASKS YOU TO DO SOMETHING, DO IT:
+- "file a ticket", "open a ticket", "log this" -> call create_mock_hr_ticket
+- "draft an email", "write to my manager", "send a note" -> call draft_hr_email
+Look up whatever you genuinely need first - usually just the employee profile and
+one policy - then CALL THE TOOL. Explaining how the user could do it themselves is
+not doing it. Researching an action request until the step budget runs out means
+they asked you to act and you never did.
+
+CHECK THE RECORD, NOT JUST THE POLICY. Questions about someone's eligibility,
+balances or elections are answered by their record: use check_pto_balance or
+lookup_benefits_status. The policy says what the rule is; the record says what is
+true for this person. Citing the rule without checking the record is how you tell
+a contractor "it depends" when the answer is a flat no.
 """
 
 
@@ -198,11 +212,23 @@ def build_graph(client: MCPClient, chat_model: Any):
         question = state["question"]
         if state.get("employee_id"):
             question = f"[asked by employee {state['employee_id']}] {question}"
-        result = await chat_model.ainvoke(
-            [{"role": "system", "content": CLASSIFY_SYSTEM},
-             {"role": "user", "content": question}]
-        )
-        word = (result.content or "").strip().lower().split()[:1]
+
+        try:
+            result = await chat_model.ainvoke(
+                [{"role": "system", "content": CLASSIFY_SYSTEM},
+                 {"role": "user", "content": question}]
+            )
+            content = result.content or ""
+        except Exception:
+            # The agent node already survives a model failure; this one did not,
+            # so a 429 here took the whole turn down with an unhandled raise.
+            # Found the hard way when the free tier's daily token limit ran out
+            # mid-evaluation. Fall back to the safe route: policy_qa retrieves and
+            # grounds the answer, where workflow would start calling tools on an
+            # intent we never actually established.
+            content = ""
+
+        word = content.strip().lower().split()[:1]
         intent: Intent = word[0] if word and word[0] in (
             "policy_qa", "workflow", "clarify", "refuse") else "policy_qa"
         escalation = guardrails.classify_escalation(state["question"])
@@ -273,7 +299,11 @@ def build_graph(client: MCPClient, chat_model: Any):
         messages = list(state["messages"])
         trace = state.get("trace", [])
         pending: dict | None = None
-        refusal: str | None = None
+        # Carried forward, not reset. The refusal fires on one pass and the graph
+        # used to loop back to the agent, re-enter this node, and overwrite it with
+        # None -- so a correctly refused action reached the user as a generic
+        # "evidence gathered" answer with the refusal silently dropped.
+        refusal: str | None = state.get("action_refusal")
 
         for raw in last.get("tool_calls", []):
             name = raw["function"]["name"]
@@ -421,7 +451,7 @@ def build_graph(client: MCPClient, chat_model: Any):
         The cap is what stops a model that keeps re-calling a failing tool from
         looping until the request times out.
         """
-        if state.get("requires_confirmation"):
+        if state.get("requires_confirmation") or state.get("action_refusal"):
             return "synthesize"
         return "agent" if state.get("steps", 0) < MAX_TOOL_STEPS else "synthesize"
 

@@ -138,3 +138,32 @@ def test_draft_hr_email_cannot_report_itself_as_sent():
 
     with pytest.raises(Exception):
         schemas.DraftHrEmailOut.model_validate({"draft": draft, "sent": True})
+
+
+# ------------------------------------- section ids as search results hand them back
+
+async def test_get_policy_section_accepts_the_section_string_from_a_chunk(call):
+    """A chunk's `section` is "RW-3 Temporary Remote Work"; the tool keys on "RW-3".
+
+    Advertising a value in one shape and demanding another is the tool's fault.
+    The agent was reading the section off a search result, getting
+    section_not_found, and spending tool steps guessing at how to split it.
+    """
+    found = await call("search_policy_documents", query="remote work another state", k=3)
+    chunk = found["chunks"][0]
+
+    verbatim = await call("get_policy_section", doc_id=chunk["doc_id"],
+                          section_id=chunk["section"])
+    assert "error" not in verbatim, verbatim
+
+    bare = await call("get_policy_section", doc_id=chunk["doc_id"],
+                      section_id=chunk["section"].split()[0])
+    assert "error" not in bare
+    assert verbatim["text"] == bare["text"]
+
+
+async def test_a_genuinely_missing_section_still_errors(call):
+    """Tolerance must not turn a real miss into a silent wrong answer."""
+    result = await call("get_policy_section", doc_id="REMOTE-WORK",
+                        section_id="RW-999 Nonexistent Section")
+    assert result["error"] == "section_not_found"

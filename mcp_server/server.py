@@ -25,6 +25,26 @@ from mcp.server.mcpserver import MCPServer
 
 from . import fixtures
 
+# Rob's real retrieval backs the two RAG tools. Imported lazily inside the tools
+# rather than at module load: building the index costs seconds and downloads an
+# embedding model, and the MCP server must still start (and CI must still run) on
+# a machine where that has not happened. Falling back to the fixture ranker keeps
+# the tool surface identical either way -- the whole point of Contract A.
+_RETRIEVAL_UNAVAILABLE = None
+
+
+def _real_retrieval():
+    """Rob's retrieve module, or None if the index is not usable here."""
+    global _RETRIEVAL_UNAVAILABLE
+    if _RETRIEVAL_UNAVAILABLE is True:
+        return None
+    try:
+        from app.rag import retrieve as _retrieve
+        return _retrieve
+    except Exception:
+        _RETRIEVAL_UNAVAILABLE = True
+        return None
+
 mcp = MCPServer("hr-tools")
 
 CONFIRM_SALT = "hr-agent-confirm-v1"
@@ -34,6 +54,21 @@ def _token(action: str, **parts: object) -> str:
     """Deterministic confirmation token: same request -> same token."""
     raw = f"{CONFIRM_SALT}|{action}|" + "|".join(f"{k}={parts[k]}" for k in sorted(parts))
     return hashlib.sha256(raw.encode()).hexdigest()[:16]
+
+
+def _normalise_section_id(section_id: str) -> str:
+    """Accept what a search result actually hands back.
+
+    A chunk's `section` field is the id AND the heading -- "SEC-2 Acceptable Use"
+    -- but this tool is keyed on the bare id. An agent that reads the section off a
+    search result and passes it straight back got section_not_found, then guessed
+    at splitting it, burning a tool step per attempt. That is the tool's fault, not
+    the caller's: it advertises a value in one shape and demands another.
+
+    Takes the leading token, which is the id in every document in the corpus
+    (RW-3, SEC-2, PTO-9, HANDBOOK-1). A caller passing the bare id is unaffected.
+    """
+    return (section_id or "").strip().split()[0] if section_id and section_id.strip() else section_id
 
 
 def _err(code: str, message: str, **extra: object) -> dict:
@@ -73,6 +108,16 @@ def search_policy_documents(query: str, k: int = 5, doc_filter: list[str] | None
                         f"No indexed documents match filter {doc_filter}. "
                         f"Valid doc_ids: {', '.join(available)}.")
 
+    real = _real_retrieval()
+    if real is not None:
+        try:
+            return real.retrieve(query, k=max(1, k), doc_filter=doc_filter)
+        except Exception:
+            # Degrade to the fixture ranker rather than failing the tool. A tool
+            # that raises here takes the agent's whole turn with it, and the brief
+            # asks for graceful degradation.
+            pass
+
     ranked = fixtures.rank_chunks(chunks, query, max(1, k))
     return {"chunks": ranked, "retrieval_mode": "fixture"}
 
@@ -84,6 +129,17 @@ def get_policy_section(doc_id: str, section_id: str) -> dict:
     Use after search_policy_documents when a snippet is not enough and the full
     section text is needed to answer precisely.
     """
+    section_id = _normalise_section_id(section_id)
+
+    real = _real_retrieval()
+    if real is not None:
+        try:
+            got = real.get_section(doc_id, section_id)
+            if got and not got.get("error"):
+                return got
+        except Exception:
+            pass
+
     text = fixtures.SECTIONS.get((doc_id, section_id))
     if text is None:
         return _err("section_not_found",
