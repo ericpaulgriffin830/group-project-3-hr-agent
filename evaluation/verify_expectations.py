@@ -77,17 +77,20 @@ def check(item: dict, out: dict) -> list[str]:
 #: independent, so the run is almost entirely waiting -- serial execution spent
 #: minutes doing nothing.
 #:
-#: 4 is measured, not guessed. At 4 the set runs in ~390s with 14/14 holding. At
-#: 10 it runs in ~250s and drops to 12/14 -- and the two failures are not agent
-#: misbehaviour, they are Groq 429s. Measured directly: 3 of 10 concurrent runs of
-#: one item hit OpenAIRateLimitError. Three keys does not help, because the limit
-#: that binds here is tokens-per-minute across all of them.
+#: The binding constraint is Groq tokens-per-minute across all three keys, not
+#: parallelism: measured, 3 of 10 concurrent runs of one item hit
+#: OpenAIRateLimitError, and a turn spends ~73% of its time inside synthesize()
+#: generating prose. Adding workers past this buys throttling, not throughput.
+#:
+#: 6 with a serial retry of anything throttled beats 4 without one: the wide pass
+#: absorbs most of the set and only the casualties pay for a second attempt,
+#: instead of every item paying a lower ceiling to protect a handful.
 #:
 #: The failures are quiet, which is the real hazard. The orchestrator catches a
 #: model failure and falls through to synthesis with whatever evidence it has --
 #: correct behaviour for a live user, but it means a throttled evaluation run
 #: reports plausible wrong answers rather than errors. Hence the warning below.
-DEFAULT_CONCURRENCY = 4
+DEFAULT_CONCURRENCY = 6
 
 
 async def _run_one(item: dict, model, semaphore: asyncio.Semaphore) -> tuple[dict, list[str]]:
@@ -120,6 +123,18 @@ async def main(pattern: str, concurrency: int = DEFAULT_CONCURRENCY) -> int:
         return_exceptions=True,
     )
 
+    # Retry whatever got throttled, serially. Lowering concurrency for the whole
+    # set to protect a handful of items pays the cost on every item; a throttled
+    # item is usually fine on a quiet retry. This is what makes a higher default
+    # safe: the fast path runs wide, and only the casualties pay for it.
+    retry_slots = [i for i, r in enumerate(results)
+                   if not isinstance(r, BaseException) and r[2]]
+    if retry_slots:
+        print(f"({len(retry_slots)} item(s) throttled — retrying serially)\n")
+        solo = asyncio.Semaphore(1)
+        for i in retry_slots:
+            results[i] = await _run_one(items[i], model, solo)
+
     # Report in file order, not completion order -- a result set that reshuffles
     # every run is hard to diff against the last one.
     failed = 0
@@ -143,10 +158,10 @@ async def main(pattern: str, concurrency: int = DEFAULT_CONCURRENCY) -> int:
           f"({elapsed:.0f}s, concurrency {concurrency})")
 
     if degraded:
-        print(f"\nWARNING: {degraded} item(s) lost a model call to rate limiting. "
-              f"Those results are not trustworthy -- the agent degrades gracefully "
-              f"on a throttled call, so a failure here may be the rate limit rather "
-              f"than the agent. Re-run at lower concurrency before believing it.")
+        print(f"\nWARNING: {degraded} item(s) were still throttled after a serial "
+              f"retry. Those results are not trustworthy -- the agent degrades "
+              f"gracefully on a throttled call, so a failure there may be the rate "
+              f"limit rather than the agent. Re-run with --concurrency=1.")
     return 1 if failed else 0
 
 
