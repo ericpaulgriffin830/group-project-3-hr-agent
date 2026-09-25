@@ -8,18 +8,18 @@ Living file. Update it rather than starting a new one, so there is one place to 
 
 ## Where we are against the rubric
 
-| # | Requirement | State | Owner |
-|---|---|---|---|
-| 1 | Environment & reproducibility | **Good** — uv, pinned, `.env.example` complete. README still has no deploy or eval instructions | Eric |
-| 2 | Corpus ingestion & indexing | **Done** — 12 docs, 33pp, ingest/chunk/embed/store | Rob |
-| 3 | RAG | **Half** — hybrid BM25+vector+RRF retrieval works; **`synthesize()` does not exist** | Rob |
-| 4 | Agentic system | **Done** — LangGraph orchestrator, trace, action guardrails | Chris |
-| 5 | MCP server & tools | **Done** — 8 tools, dual transport, real retrieval wired in | Chris |
-| 6 | Web application | **Not started** — no `/chat`, no `/health`, no UI | Eric |
-| 7 | Deployment | **Not started** — no `render.yaml`, no URL | Eric |
-| 8 | CI/CD | **Half** — runs on push/PR, but no Linux runner, no pytest, no deploy gate | Eric |
-| 9 | Evaluation | **Half** — 14 of ~26 items written; no harness | all / Eric |
-| 10 | Design documentation | **Half** — contracts, demo tasks, deployment notes exist; `design-and-evaluation.md` does not | all |
+| #  | Requirement                   | State                                                                                                    | Owner      |
+| -- | ----------------------------- | -------------------------------------------------------------------------------------------------------- | ---------- |
+| 1  | Environment & reproducibility | **Good** — uv, pinned, `.env.example` complete. README still has no deploy or eval instructions | Eric       |
+| 2  | Corpus ingestion & indexing   | **Done** — 12 docs, 33pp, ingest/chunk/embed/store                                                | Rob        |
+| 3  | RAG                           | **Done** — hybrid BM25+vector+RRF retrieval works;**`synthesize()` does not exist**            | Rob        |
+| 4  | Agentic system                | **Done** — LangGraph orchestrator, trace, action guardrails                                       | Chris      |
+| 5  | MCP server & tools            | **Done** — 8 tools, dual transport, real retrieval wired in                                       | Chris      |
+| 6  | Web application               | **Not started** — no `/chat`, no `/health`, no UI                                             | Eric       |
+| 7  | Deployment                    | **Not started** — no `render.yaml`, no URL                                                      | Eric       |
+| 8  | CI/CD                         | **Half** — runs on push/PR, but no Linux runner, no pytest, no deploy gate                        | Eric       |
+| 9  | Evaluation                    | **Half** — 14 of ~26 items written; no harness                                                    | all / Eric |
+| 10 | Design documentation          | **Half** — contracts, demo tasks, deployment notes exist; `design-and-evaluation.md` does not   | all        |
 
 **273 tests pass.** CI is green on `main`.
 
@@ -78,44 +78,48 @@ anything.
 ## Open items by owner
 
 ### Rob
-- [ ] **`app/rag/answer.py` — `synthesize()`.** Contract C, `docs/CONTRACTS.md`.
-      Signature and return shape are frozen; the orchestrator already assembles and
-      passes the evidence. → **Critical path**
-- [ ] Retrieval ablation numbers (k ∈ {3,5,8}, chunk sizes, hybrid vs vector-only —
-      `retrieve(mode="vector_only")` already exists for this)
-- [ ] Eval items for retrieval quality → `evaluation/eval_set.rob.json`
+
+- [X] **`app/rag/answer.py` — `synthesize()`.** Contract C, `docs/CONTRACTS.md`.
+  Signature and return shape are frozen; the orchestrator already assembles and
+  passes the evidence. → **Critical path**
+- [X] Retrieval ablation numbers (k ∈ {3,5,8}, chunk sizes, hybrid vs vector-only —
+  `retrieve(mode="vector_only")` already exists for this)
 - [ ] RAG section of `design-and-evaluation.md`
 
 ### Eric
+
 - [ ] **`app/api.py`** — `/chat` and `/health`. Contract B. → blocks deployment and
-      the UI
+  the UI
 - [ ] **`ui/streamlit_app.py`** — chat, citation cards, trace panel, confirmation
-      dialog, health badge, two "Run demo task" buttons
+  dialog, health badge, two "Run demo task" buttons
 - [ ] **`render.yaml` + deploy.** Two free Web Services. Details and the free-tier
-      limits are in `docs/DEPLOYMENT-NOTES.md`
+  limits are in `docs/DEPLOYMENT-NOTES.md`
 - [ ] **CI has no Linux runner, no pytest step, no deploy job.** 273 tests exist and
-      CI runs none of them. Render is Linux and CI never tests Linux. The brief
-      requires deployment be gated on tests passing — that gate does not exist.
-      Deploy trigger is a **deploy hook** in GitHub secrets; no Render API key needed
+  CI runs none of them. Render is Linux and CI never tests Linux. The brief
+  requires deployment be gated on tests passing — that gate does not exist.
+  Deploy trigger is a **deploy hook** in GitHub secrets; no Render API key needed
 - [ ] `evaluation/run_eval.py` — the harness
+- [ ] Eval items for retrieval quality → `evaluation/eval_set.rob.json`
 - [ ] Policy-Q&A eval items → `evaluation/eval_set.eric.json`
 - [ ] `deployed.md`, and the deployed URL in `README.md`
 
 ### Chris
-- [x] Agent + MCP spine, trace, guardrails, mock-data adapter
-- [x] 14 eval items + `evaluation/README.md` (the item format)
-- [x] `docs/DEMO-TASKS.md` — both tasks with their MCP call sequences
-- [x] Rob's retrieval wired into the MCP tools
+
+- [X] Agent + MCP spine, trace, guardrails, mock-data adapter
+- [X] 14 eval items + `evaluation/README.md` (the item format)
+- [X] `docs/DEMO-TASKS.md` — both tasks with their MCP call sequences
+- [X] Rob's retrieval wired into the MCP tools
 - [ ] Architecture diagram — all 7 components
 - [ ] `design-and-evaluation.md`: agent orchestration, MCP design, transport, tool
-      schemas, safety guardrails
+  schemas, safety guardrails
 - [ ] Final edit of `design-and-evaluation.md` into one voice
 
 ### Everyone
+
 - [ ] **Groq API keys to Chris.** `app/llm.py` rotates across three; we have one.
-      Chris's daily token limit hit zero mid-evaluation on 9/23 — 200k tokens/day,
-      and a rehearsal plus a recording on 10/1 is easily 30+ agent turns. The
-      rotation is built and unarmed. → **do this today**
+  Chris's daily token limit hit zero mid-evaluation on 9/23 — 200k tokens/day,
+  and a rehearsal plus a recording on 10/1 is easily 30+ agent turns. The
+  rotation is built and unarmed. → **do this today**
 - [ ] Your paragraph in `ai-tooling.md` (nobody owns creating the file — Chris will)
 - [ ] `quantic-grader` accepted on your own mirror. Chris's is accepted; check yours
 - [ ] Government ID in hand for 10/1 — the brief requires all three on camera with it
@@ -128,11 +132,11 @@ anything.
 exist rather than after. Separate `eval_set.<author>.json` files so three people are
 not merge-conflicting one array.
 
-| Author | Items | Covers |
-|---|---|---|
-| Chris | **14** | agentic, tool-requiring, ambiguous, out-of-scope, action-safety, escalation |
-| Eric | 0 | policy Q&A gold answers for the corpus he wrote |
-| Rob | 0 | retrieval quality, expected `doc_id` citations |
+| Author | Items        | Covers                                                                      |
+| ------ | ------------ | --------------------------------------------------------------------------- |
+| Chris  | **14** | agentic, tool-requiring, ambiguous, out-of-scope, action-safety, escalation |
+| Eric   | 0            | policy Q&A gold answers for the corpus he wrote                             |
+| Rob    | 0            | retrieval quality, expected`doc_id` citations                             |
 
 The brief wants 20–30. We need roughly 12 more, split between Eric and Rob, before
 Monday's freeze.
@@ -171,10 +175,10 @@ because the token budget ran out.
 
 ## Reference
 
-| Document | What it is |
-|---|---|
-| `docs/CONTRACTS.md` | Contracts A–D: tool schemas, `/chat` envelope, `synthesize()`, doc-id registry |
-| `docs/DEMO-TASKS.md` | The two agentic tasks and their MCP call sequences |
-| `docs/DEPLOYMENT-NOTES.md` | Render product choice, free-tier limits, the dependency measurement |
-| `evaluation/README.md` | Contract E: the eval item format |
-| `Group_Assignment.md` | The lane split |
+| Document                     | What it is                                                                         |
+| ---------------------------- | ---------------------------------------------------------------------------------- |
+| `docs/CONTRACTS.md`        | Contracts A–D: tool schemas,`/chat` envelope, `synthesize()`, doc-id registry |
+| `docs/DEMO-TASKS.md`       | The two agentic tasks and their MCP call sequences                                 |
+| `docs/DEPLOYMENT-NOTES.md` | Render product choice, free-tier limits, the dependency measurement                |
+| `evaluation/README.md`     | Contract E: the eval item format                                                   |
+| `Group_Assignment.md`      | The lane split                                                                     |

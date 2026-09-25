@@ -1,35 +1,49 @@
 """Turn each document's sections into embeddable chunks.
 
-Chunking is heading-aware first: a chunk never crosses a section boundary. Two
-reasons, both concrete rather than stylistic. First, `get_policy_section` (Contract
-A, tool #2) already gives full-section access when a snippet is not enough, which
-is what lets us skip overlap entirely -- see below. Second, the corpus's
-cross-references ("see PTO-8", "per TAX-5") are prose anchored to whole sections;
-splitting one mid-section risks separating a reference from what it refers to.
+**One section = one chunk, always.** Chunking is heading-aware: a chunk never
+crosses a section boundary, and a section is never split into more than one
+chunk regardless of length. This changed from an earlier design that packed
+long sections into multiple sub-chunks (see git history for chunk_section's
+previous paragraph-packing logic) -- Rob, Chris and Eric agreed on 2026-09-24
+that a single chunk always carrying the FULL section text is worth more than a
+tighter per-chunk token budget. The concrete failure case the earlier design
+risked: a query matches only the first half of a two-chunk section, the second
+chunk (with the actually-relevant sentence) never surfaces in the top-k, and
+`get_policy_section` is never called to pull in the rest because nothing
+pointed the agent at that section id in the first place. One chunk per section
+means whatever chunk a query hits already contains everything `get_policy_section`
+would have returned, with no second call required.
 
-Most sections fit in one chunk untouched. A few run long enough (PTO-3, PTO-9,
-RW-4, RW-6, and a handful of others) that a single chunk would be an unwieldy
-retrieval unit, so those are split further -- by paragraph, never mid-sentence,
-packed greedily up to TARGET_CHUNK_TOKENS.
+This also simplifies the reasoning `retrieve.py`'s module docstring already gives
+for skipping overlap between sub-chunks -- there are no sub-chunks to overlap
+between anymore. That reasoning still applies to why a chunk never crosses a
+section boundary in the first place: the corpus's cross-references ("see PTO-8",
+"per TAX-5") are prose anchored to whole sections, and splitting one mid-section
+would risk separating a reference from what it refers to. There is now nothing
+left to split.
 
-No overlap between the resulting sub-chunks, unlike the sliding-window-with-overlap
-example in the project brief. That pattern earns its overlap when chunk boundaries
-fall in the middle of undifferentiated text and neighboring context might be lost.
-Here, get_policy_section already covers "I need the neighboring context" by
-returning the whole section -- so overlap would only duplicate content in the
-index for no retrieval benefit. Every section-and-sub-chunk-count decision is
-therefore driven by section structure, not a token window imposed on top of it.
+**Known trade-off, not addressed here.** fastembed's own model registry documents
+`BAAI/bge-small-en-v1.5` as truncating input at 512 tokens. The longest section in
+the current corpus is 460 tokens by this module's own (approximate, word-level)
+counter -- under that limit, but not by a wide margin, and a real subword
+tokenizer typically produces MORE tokens than a word-level count for the same
+text, not fewer. A future section longer than the real embedding truncation point
+would have its tail silently dropped from the vector representation (though not
+from `text`/`snippet`, and not from what `get_policy_section` returns -- only the
+embedding itself would be incomplete). `token_count` is still recorded on every
+Chunk specifically so this is checkable later, but nothing here enforces a limit
+or warns at build time. Worth a line in the design doc's known-limitations section
+if the corpus grows.
 
 Token counts use a small offline regex approximation (count_tokens below), not a
-real tokenizer. This only has to be a consistent, deterministic sizing rule for
-chunk-packing decisions -- not byte-exact to fastembed's own tokenizer, which
-would mean loading the embedding model just to size chunks. tiktoken was tried
-first and dropped: its cl100k_base encoding is not vendored in the package, so
-get_encoding() fetches a ~1.7MB BPE file from openaipublic.blob.core.windows.net
-on first use with no local fallback. That is a runtime network dependency this
-project should not carry for something that only sizes chunks, particularly on
-a free-tier deploy where DEPLOYMENT-NOTES.md already treats every unnecessary
-runtime dependency as a real risk, not a hypothetical one.
+real tokenizer -- see the trade-off above for where that approximation's direction
+of error matters. tiktoken was tried first and dropped: its cl100k_base encoding
+is not vendored in the package, so get_encoding() fetches a ~1.7MB BPE file from
+openaipublic.blob.core.windows.net on first use with no local fallback. That is a
+runtime network dependency this project should not carry for something that only
+sizes and records chunk length, particularly on a free-tier deploy where
+DEPLOYMENT-NOTES.md already treats every unnecessary runtime dependency as a real
+risk, not a hypothetical one.
 """
 
 from __future__ import annotations
@@ -40,16 +54,14 @@ from dataclasses import dataclass
 
 from app.rag.ingest import ParsedDocument, RawSection
 
-#: Sections at or under this many tokens become exactly one chunk.
-TARGET_CHUNK_TOKENS = 600
-
 #: Citation snippet length, matching mcp_server/fixtures.py's fixture-phase
 #: truncation so a citation looks the same whether it is backed by the fixture
 #: ranker or this real index.
 SNIPPET_CHARS = 320
 
 #: Word characters and punctuation counted separately, approximating subword
-#: tokenization closely enough for a chunk-size budget -- no model, no network.
+#: tokenization closely enough to record chunk length -- no model, no network.
+#: See the module docstring's trade-off note on why this can undercount.
 _TOKEN_PATTERN = re.compile(r"\w+|[^\w\s]")
 
 
@@ -59,12 +71,17 @@ def count_tokens(text: str) -> int:
 
 @dataclass(frozen=True)
 class Chunk:
-    """One retrievable unit.
+    """One retrievable unit -- always exactly one whole section's worth of text.
 
     `section` is the citation string Contract A expects -- section_id and heading
     together, e.g. "PTO-3 Requesting and Approving PTO" -- formatted identically to
     mcp_server/fixtures.py's fixture-phase chunks, so a citation reads the same
     regardless of which ranking produced it.
+
+    `chunk_index` is always 0 now that a section never splits. The field stays
+    (rather than being removed) so `store.py`'s metadata shape and `_chunk_id`'s
+    signature don't need to change alongside this -- a section splitting again in
+    the future would only mean this stops always being 0, not a schema change.
     """
 
     chunk_id: str
@@ -96,58 +113,29 @@ def _snippet(text: str, limit: int = SNIPPET_CHARS) -> str:
     return text[:cut].rstrip() + "…"
 
 
-def _paragraphs(text: str) -> list[str]:
-    """Split on blank lines. Never splits inside a paragraph or a list block."""
-    parts = re.split(r"\n\s*\n", text.strip())
-    return [p.strip() for p in parts if p.strip()]
-
-
-def _pack_paragraphs(paragraphs: list[str], target_tokens: int) -> list[str]:
-    """Greedily pack paragraphs into groups, each near or under target_tokens.
-
-    Deterministic single left-to-right pass: a paragraph joins the current group
-    unless that would push it over budget AND the group already has content --
-    in which case it starts a new group instead. A single paragraph longer than
-    the target still gets its own group rather than being cut mid-sentence; that
-    is an accepted oversized chunk, not a bug, and it does not occur anywhere in
-    the current corpus.
-    """
-    groups: list[list[str]] = []
-    current: list[str] = []
-    current_tokens = 0
-    for para in paragraphs:
-        para_tokens = count_tokens(para)
-        if current and current_tokens + para_tokens > target_tokens:
-            groups.append(current)
-            current, current_tokens = [], 0
-        current.append(para)
-        current_tokens += para_tokens
-    if current:
-        groups.append(current)
-    return ["\n\n".join(g) for g in groups]
-
-
 def chunk_section(section: RawSection, doc: ParsedDocument) -> list[Chunk]:
-    if count_tokens(section.text) <= TARGET_CHUNK_TOKENS:
-        pieces = [section.text]
-    else:
-        pieces = _pack_paragraphs(_paragraphs(section.text), TARGET_CHUNK_TOKENS)
+    """One section -> exactly one chunk, containing the section's full text.
 
+    Returns a single-element list (not a bare Chunk) so chunk_document's
+    `chunks.extend(...)` and any existing caller iterating the result keep
+    working unchanged -- the one-chunk-per-section invariant lives in the
+    contents, not the shape of what this returns.
+    """
     citation = f"{section.section_id} {section.heading}"
+    text = section.text
     return [
         Chunk(
-            chunk_id=_chunk_id(doc.doc_id, section.section_id, i),
+            chunk_id=_chunk_id(doc.doc_id, section.section_id, 0),
             doc_id=doc.doc_id,
             section_id=section.section_id,
             section=citation,
             title=doc.title,
             source_path=doc.source_path,
-            text=piece,
-            snippet=_snippet(piece),
-            chunk_index=i,
-            token_count=count_tokens(piece),
+            text=text,
+            snippet=_snippet(text),
+            chunk_index=0,
+            token_count=count_tokens(text),
         )
-        for i, piece in enumerate(pieces)
     ]
 
 
