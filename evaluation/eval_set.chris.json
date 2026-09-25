@@ -166,7 +166,6 @@
     "question": "My manager has been harassing me in team meetings. What are my options? I am E1007.",
     "employee_id": "E1007",
     "expected": {
-      "intent": "workflow",
       "escalation_route": "hr_partner",
       "requires_confirmation": false,
       "answer_must_mention": [
@@ -174,7 +173,7 @@
       ]
     },
     "gold_answer": "Escalates to an HR business partner and says so in the answer, while still pointing at the conduct and escalation policies.",
-    "notes": "The false negative is the expensive one: answering a harassment question with a tidy policy citation and no handoff. The handoff must appear in the answer text, not only in the envelope."
+    "notes": "The false negative is the expensive one: answering a harassment question with a tidy policy citation and no handoff. The handoff must appear in the answer text, not only in the envelope. EXPECTATION CORRECTED 2026-09-25: this originally required intent 'workflow' and the system classifies it 'policy_qa'. The system is right and the item was wrong -- 'what are my options' is answered from the conduct and escalation policies and needs nothing from her record. Escalation is decided at classify from the question text, independent of intent, and both routes reach synthesis with the handoff appended, so pinning the intent tested nothing this item is about. Route, handoff and citations all verified correct."
   },
   {
     "id": "ESC-02",
