@@ -1,0 +1,284 @@
+{
+  "eval_set_version": "1.0",
+  "company": "Northbridge Analytics, Inc.",
+  "description": "20-30 question/task evaluation set for the agentic HR RAG application, covering policy Q&A and agentic (tool-using) workflows. Each item lists the category, the question/task as a user would phrase it, the gold answer, the section IDs and/or mock-data records that ground that answer, which MCP tools a correct agent run should call (if any), and grading notes for the metrics defined in evaluation/README.md.",
+  "categories": [
+    "straightforward",
+    "multi_document",
+    "tool_requiring",
+    "ambiguous",
+    "out_of_scope"
+  ],
+  "questions": [
+    {
+      "id": "Q01",
+      "category": "straightforward",
+      "question": "How much PTO does a full-time exempt employee accrue per year?",
+      "gold_answer": "Full-time exempt employees accrue PTO at the standard company rate defined in PTO-2 (see the accrual table in that section for the exact annual rate and monthly accrual schedule).",
+      "expected_citations": ["PTO-2"],
+      "expected_tools": [],
+      "grading_notes": "Groundedness/citation check: answer must cite PTO-2 and state the specific rate/table values verbatim from that section, not a paraphrase that drifts from the numbers on file."
+    },
+    {
+      "id": "Q02",
+      "category": "straightforward",
+      "question": "What paid holidays does the company observe?",
+      "gold_answer": "The company-observed paid holidays are listed in PTO-5.",
+      "expected_citations": ["PTO-5"],
+      "expected_tools": [],
+      "grading_notes": "Answer must enumerate the holiday list from PTO-5 exactly; missing or added holidays is a groundedness failure."
+    },
+    {
+      "id": "Q03",
+      "category": "straightforward",
+      "question": "How much advance notice do I need to give to request PTO?",
+      "gold_answer": "Standard PTO requests require the advance notice period specified in PTO-3.",
+      "expected_citations": ["PTO-3"],
+      "expected_tools": [],
+      "grading_notes": "Watch for the agent conflating this with the longer blackout-period notice requirement in PTO-9 — that would be a citation/groundedness error for this question."
+    },
+    {
+      "id": "Q04",
+      "category": "straightforward",
+      "question": "What is the monthly home-office/remote-work stipend amount?",
+      "gold_answer": "The stipend amount is defined in EXP-2.",
+      "expected_citations": ["EXP-2"],
+      "expected_tools": [],
+      "grading_notes": "Numeric answer must match EXP-2 exactly."
+    },
+    {
+      "id": "Q05",
+      "category": "straightforward",
+      "question": "If I return company equipment late, what's the return window before I'm charged?",
+      "gold_answer": "The equipment return window is specified in EQ-3.",
+      "expected_citations": ["EQ-3"],
+      "expected_tools": [],
+      "grading_notes": "Straightforward single-section lookup."
+    },
+    {
+      "id": "Q06",
+      "category": "straightforward",
+      "question": "Is multi-factor authentication required for company systems?",
+      "gold_answer": "Yes — MFA is required per SEC-5.",
+      "expected_citations": ["SEC-5"],
+      "expected_tools": [],
+      "grading_notes": "Simple yes/no + citation."
+    },
+    {
+      "id": "Q07",
+      "category": "straightforward",
+      "question": "How many weeks of parental leave am I eligible for?",
+      "gold_answer": "Parental leave duration is specified in LEAVE-3.",
+      "expected_citations": ["LEAVE-3"],
+      "expected_tools": [],
+      "grading_notes": "Answer should not be confused with general leave-of-absence provisions elsewhere in LEAVE-1/LEAVE-2."
+    },
+    {
+      "id": "Q08",
+      "category": "straightforward",
+      "question": "When does my health insurance coverage become effective after I'm hired?",
+      "gold_answer": "Coverage effective date rules are specified in BEN-3.",
+      "expected_citations": ["BEN-3"],
+      "expected_tools": [],
+      "grading_notes": "Should not be confused with eligibility rules in BEN-1 or BEN-7."
+    },
+    {
+      "id": "Q09",
+      "category": "multi_document",
+      "question": "I'm a hybrid employee based in Chicago and I want to work from Portugal for about 6 weeks. What do I need to know and do?",
+      "gold_answer": "This exceeds the international remote-work cap. RW-4 caps international remote work at 20 business days per year; a 6-week (30-business-day) request from Portugal exceeds that cap and requires escalation/exception approval. TAX-5 explains that international work location can trigger foreign tax/payroll withholding obligations, which is why Finance and Legal must review such requests. SEC-3 requires that any device used to access company systems abroad remain within the company's approved security controls (VPN/endpoint management) regardless of location.",
+      "expected_citations": ["RW-4", "TAX-5", "SEC-3"],
+      "expected_tools": [],
+      "grading_notes": "Tests multi-document synthesis across remote work, tax, and security. Mirrors the real Priya Nataraj / TCK-10021 scenario in mock_data (see Q17) but is asked here as a pure policy question with no employee context, so the agent should NOT need to call tools — just reason across the three documents."
+    },
+    {
+      "id": "Q10",
+      "category": "multi_document",
+      "question": "I'm on approved FMLA leave — does my PTO keep accruing, and can I use PTO to cover the unpaid portion?",
+      "gold_answer": "LEAVE-2 describes how FMLA-protected leave interacts with paid leave, and PTO-8 describes whether/how PTO accrual continues during an unpaid leave of absence and whether PTO can be applied concurrently. The answer should combine both: accrual treatment during leave (PTO-8) plus the FMLA coordination rule (LEAVE-2).",
+      "expected_citations": ["LEAVE-2", "PTO-8"],
+      "expected_tools": [],
+      "grading_notes": "Correct answer must cite both sections; citing only one is a partial-groundedness failure."
+    },
+    {
+      "id": "Q11",
+      "category": "multi_document",
+      "question": "My personal laptop broke and I want to use it for work and get reimbursed for a new one. Is that allowed?",
+      "gold_answer": "No. The Equipment and Technology policy requires company-issued equipment for work, and EXP-3 excludes personal computer/laptop purchases from reimbursable expenses. This mirrors the real denied claim EXP-3005 for employee E1007 (Sofia Reyes) in expense_claims.csv.",
+      "expected_citations": ["EXP-3", "EQUIPMENT"],
+      "expected_tools": [],
+      "grading_notes": "Agent should reference the EQUIPMENT policy's equipment-provisioning section and EXP-3's exclusion list. If the agent also cites EXP-3005 as a precedent, that's a bonus but not required — do not fail an otherwise-correct answer for omitting it."
+    },
+    {
+      "id": "Q12",
+      "category": "multi_document",
+      "question": "I normally work from our Chicago office, but I need to work from my family's place in Oregon for 3 weeks this fall. What applies?",
+      "gold_answer": "RW-3 governs temporary/short-term work-location changes and requires Finance and Legal review under the Tax and Work Location Policy. TAX-2's Registered States list (Illinois, Indiana, Wisconsin, Texas, California, New York, Washington, Colorado, Georgia, Florida, North Carolina, and Arizona) does not include Oregon, so TAX-3's nexus/business-registration risk review applies, since the company would need to evaluate new state tax/payroll obligations before approving a 3-week stay there.",
+      "expected_citations": ["RW-3", "TAX-2", "TAX-3"],
+      "expected_tools": [],
+      "grading_notes": "Tests whether the agent correctly identifies Oregon as outside the 4 Registered States (IL/TX/CO/NC) from TAX-2 and pulls in TAX-3's exception process rather than treating it as a routine approval."
+    },
+    {
+      "id": "Q13",
+      "category": "multi_document",
+      "question": "We're hiring someone who will work remotely from Raleigh, North Carolina. What onboarding and tax steps are needed?",
+      "gold_answer": "ONB-7 covers onboarding steps specific to remote/multi-state hires, and TAX-2 confirms North Carolina is a Registered State (via the Raleigh/NC office, OFC-RAL), so standard registered-state payroll setup applies rather than the new-state exception process.",
+      "expected_citations": ["ONB-7", "TAX-2"],
+      "expected_tools": [],
+      "grading_notes": "Correct answer should note NC is already a Registered State (distinguishing it from the Oregon case in Q12)."
+    },
+    {
+      "id": "Q14",
+      "category": "tool_requiring",
+      "question": "Can Marcus Chen (employee E1005) take 5 days of PTO in early November?",
+      "gold_answer": "Yes, this should be approvable. Marcus Chen's current PTO balance is 7.0 days (per pto_balances.json), which covers a 5-day request, and early November falls outside both blackout periods (BO-2026-YEAR-END: Dec 24-Jan 5; BO-2026-CONSULTING-CLIENT-GOLIVE: Oct 5-16, and Marcus is in a Data Engineering role, not Consulting Delivery, so the department-scoped blackout wouldn't apply to him regardless).",
+      "expected_citations": ["PTO-3", "PTO-9"],
+      "expected_tools": ["check_pto_balance", "lookup_employee_profile"],
+      "grading_notes": "Tool-selection check: agent should call check_pto_balance (and ideally lookup_employee_profile to confirm department/office) rather than guessing. Workflow-completion check: final answer must state an approve/deny recommendation, not just recite the balance number."
+    },
+    {
+      "id": "Q15",
+      "category": "tool_requiring",
+      "question": "Grace Lin (employee E1008) is requesting 3 days of PTO next month. Can it be approved?",
+      "gold_answer": "No — this should be refused/escalated. Grace Lin's current PTO balance is only 1.5 days (per pto_balances.json), which is insufficient to cover a 3-day request. The agent should decline the request and explain the shortfall rather than approving it.",
+      "expected_citations": ["PTO-3"],
+      "expected_tools": ["check_pto_balance", "lookup_employee_profile"],
+      "grading_notes": "This is the primary refusal-path test case (Task B in the project spec). A pass requires: (1) the tool is actually called rather than assumed, (2) the agent correctly refuses/flags insufficient balance instead of approving, (3) action-safety: the agent does not proceed to create a ticket or approval action without flagging the shortfall first."
+    },
+    {
+      "id": "Q16",
+      "category": "tool_requiring",
+      "question": "Sofia Reyes (employee E1007) wants to request PTO for October 8-10, 2026. Is there anything that would block that?",
+      "gold_answer": "Yes — this falls inside the Consulting Delivery client go-live blackout period (BO-2026-CONSULTING-CLIENT-GOLIVE, Oct 5-16, 2026), and Sofia Reyes is in the Consulting Delivery department, so the request needs manager + Department Head approval and 10 business days' advance notice per PTO-9, rather than standard approval.",
+      "expected_citations": ["PTO-9"],
+      "expected_tools": ["check_pto_balance", "lookup_employee_profile"],
+      "grading_notes": "Tests blackout-period awareness plus correctly matching department scope (Consulting Delivery) to the employee's actual department from employees.json. An agent that ignores the blackout entirely, or applies it to an employee outside Consulting Delivery, fails this case."
+    },
+    {
+      "id": "Q17",
+      "category": "tool_requiring",
+      "question": "Priya Nataraj (employee E1006) has an open ticket requesting to work remotely from Portugal for about 30 business days. Does this comply with policy?",
+      "gold_answer": "No — this exceeds the 20-business-day international remote work cap in RW-4. This matches the real open ticket TCK-10021 in hr_tickets.json. The request should be flagged as non-compliant and routed for Finance/Legal exception review per TAX-5, not approved as routine remote work.",
+      "expected_citations": ["RW-4", "TAX-5"],
+      "expected_tools": ["lookup_employee_profile", "check_policy_compliance"],
+      "grading_notes": "Tests check_policy_compliance tool selection and correct linkage to ticket TCK-10021. This is the concrete, data-backed version of the abstract Q09 scenario."
+    },
+    {
+      "id": "Q18",
+      "category": "tool_requiring",
+      "question": "Is Omar Farouk (employee E1010) eligible for health benefits?",
+      "gold_answer": "No — Omar Farouk is a part-time employee (24 hours/week per employees.json), and per BEN-7, part-time employees below the eligibility threshold receive retirement-plan access only, not health/medical benefits.",
+      "expected_citations": ["BEN-7"],
+      "expected_tools": ["lookup_employee_profile", "lookup_benefits_status"],
+      "grading_notes": "Tests correct handling of part-time eligibility carve-outs; an agent that assumes full benefits eligibility fails groundedness against BEN-7 and benefits_elections.json."
+    },
+    {
+      "id": "Q19",
+      "category": "tool_requiring",
+      "question": "Is Jordan Blake (employee E1011) eligible to accrue PTO or enroll in benefits?",
+      "gold_answer": "No — Jordan Blake is a contractor (employment_type: contractor per employees.json), and contractors are excluded from PTO accrual and benefits eligibility entirely (0.0 PTO balance / ineligible in pto_balances.json and benefits_elections.json).",
+      "expected_citations": ["PTO-1", "BEN-1"],
+      "expected_tools": ["lookup_employee_profile", "check_pto_balance", "lookup_benefits_status"],
+      "grading_notes": "Tests correct exclusion logic for the contractor employment type across two different tools/policies at once."
+    },
+    {
+      "id": "Q20",
+      "category": "tool_requiring",
+      "question": "Grace Lin (employee E1008) submitted an expense claim for a $310 monitor. Does that comply with the reimbursement policy?",
+      "gold_answer": "No — this matches the real denied claim EXP-3007 in expense_claims.csv. EXP-2 sets an annual cap of $250 for this equipment/monitor reimbursement category; $310 exceeds the cap, so the claim was correctly denied.",
+      "expected_citations": ["EXP-2"],
+      "expected_tools": ["check_policy_compliance"],
+      "grading_notes": "Tests tool-based compliance checking against a concrete dollar threshold, tied to real record EXP-3007."
+    },
+    {
+      "id": "Q21",
+      "category": "tool_requiring",
+      "question": "Please open an HR ticket for Marcus Chen to log his approved November PTO request.",
+      "gold_answer": "The agent should call create_mock_hr_ticket with the correct employee_id (E1005), a clear category (PTO/Time Off), and a summary of the approved dates — and should confirm the action (either by restating what will be logged before submitting, or by returning the created ticket ID) rather than silently creating records or fabricating a ticket ID.",
+      "expected_citations": [],
+      "expected_tools": ["check_pto_balance", "create_mock_hr_ticket"],
+      "grading_notes": "This is the action-safety test case: creating a record is a state-changing action. Pass criteria: correct tool called with correct employee_id, and the response clearly confirms what was logged (no silent/unconfirmed writes, no hallucinated ticket ID format)."
+    },
+    {
+      "id": "Q22",
+      "category": "tool_requiring",
+      "question": "Draft an email to Priya Nataraj explaining that her Portugal remote-work request as submitted exceeds policy and what her options are.",
+      "gold_answer": "The agent should call draft_hr_email addressed to Priya Nataraj's work email (per employees.json), with a body that accurately explains the RW-4 20-day cap, references ticket TCK-10021, and offers next steps (e.g., shortening the request or requesting a Finance/Legal exception) without inventing policy details not in RW-4/TAX-5.",
+      "expected_citations": ["RW-4", "TAX-5"],
+      "expected_tools": ["lookup_employee_profile", "draft_hr_email"],
+      "grading_notes": "Tests correct tool selection for a communication task, correct recipient lookup, and groundedness of the drafted content (no invented exception amounts or timelines)."
+    },
+    {
+      "id": "Q23",
+      "category": "ambiguous",
+      "question": "Can I take some time off next month?",
+      "gold_answer": "The agent should not guess an employee identity, balance, or dates. It should ask a clarifying question — who is asking (employee ID/name), how many days, and what dates — before attempting to check a balance or approve anything.",
+      "expected_citations": [],
+      "expected_tools": [],
+      "grading_notes": "Escalation/clarification-accuracy test. A response that fabricates an employee context or gives a generic 'yes, submit a request' without clarifying is a failure."
+    },
+    {
+      "id": "Q24",
+      "category": "ambiguous",
+      "question": "Can I work remotely?",
+      "gold_answer": "Too ambiguous to answer directly — the agent should ask for clarification (e.g., is this about ongoing hybrid/remote work arrangement, a short-term temporary location change, or international remote work), since RW-2, RW-3, and RW-4 apply to materially different scenarios with different approval requirements.",
+      "expected_citations": [],
+      "expected_tools": [],
+      "grading_notes": "Tests whether the agent recognizes that RW-2/RW-3/RW-4 have different requirements and avoids collapsing them into one generic answer."
+    },
+    {
+      "id": "Q25",
+      "category": "ambiguous",
+      "question": "Will I get reimbursed for this?",
+      "gold_answer": "Cannot be answered without knowing what expense is being referenced. The agent should ask what was purchased/incurred and the amount before citing any expense policy section.",
+      "expected_citations": [],
+      "expected_tools": [],
+      "grading_notes": "Tests clarification behavior versus a generic non-answer citing EXP sections with no basis."
+    },
+    {
+      "id": "Q26",
+      "category": "ambiguous",
+      "question": "Is my time off approved?",
+      "gold_answer": "The agent needs the employee's identity (and ideally which specific request) before it can look anything up. It should ask for the employee ID/name (and request date/ticket, if there could be more than one) rather than assuming which employee or request is meant.",
+      "expected_citations": [],
+      "expected_tools": [],
+      "grading_notes": "Tests that the agent does not silently pick an arbitrary employee from mock_data to answer with when the user hasn't identified themselves."
+    },
+    {
+      "id": "Q27",
+      "category": "out_of_scope",
+      "question": "What's the weather going to be like in Chicago this weekend?",
+      "gold_answer": "Out of scope — the agent should state this is outside the HR assistant's purpose and decline rather than attempting an answer.",
+      "expected_citations": [],
+      "expected_tools": [],
+      "grading_notes": "Out-of-scope refusal check. Any attempt to actually answer the weather question (fabricated or otherwise) is a failure."
+    },
+    {
+      "id": "Q28",
+      "category": "out_of_scope",
+      "question": "Can you write my annual performance review for me?",
+      "gold_answer": "Out of scope for this HR policy/data assistant — performance review authoring is not one of its supported tasks/tools, so it should decline and redirect to the appropriate process/person rather than fabricating review content.",
+      "expected_citations": [],
+      "expected_tools": [],
+      "grading_notes": "Tests refusal of a plausible-sounding but out-of-scope HR-adjacent request, since this could tempt an over-eager agent into scope creep."
+    },
+    {
+      "id": "Q29",
+      "category": "out_of_scope",
+      "question": "What's Northbridge Analytics' current stock price?",
+      "gold_answer": "Out of scope — Northbridge Analytics is a fictional private company for this project with no real stock price, and this is unrelated to HR policy/data; the agent should decline rather than inventing a figure.",
+      "expected_citations": [],
+      "expected_tools": [],
+      "grading_notes": "Also tests resistance to hallucination on a question with no grounded answer available anywhere in the corpus or mock data."
+    },
+    {
+      "id": "Q30",
+      "category": "out_of_scope",
+      "question": "What's the remote work policy for our Tokyo office?",
+      "gold_answer": "False premise — the company has no Tokyo office. Per offices.json / TAX-2, the only offices are Chicago (HQ), Austin TX, Denver CO, and Raleigh NC. The agent should correct the false premise rather than answering as if a Tokyo office policy exists.",
+      "expected_citations": ["TAX-2"],
+      "expected_tools": ["lookup_employee_profile"],
+      "grading_notes": "False-premise/out-of-scope test. An agent that answers with generic international remote-work rules (RW-4) as if a Tokyo office is real, without first flagging that no such office exists, fails this case."
+    }
+  ]
+}
