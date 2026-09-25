@@ -205,24 +205,65 @@ if __name__ == "__main__":
 GROQ_OPENAI_BASE_URL = "https://api.groq.com/openai/v1"
 
 
+class _RotatingChat:
+    """One chat model per key, with tool binding that survives the rotation.
+
+    The obvious construction -- build a ChatOpenAI per key, compose them with
+    `with_fallbacks`, then call `.bind_tools()` on the result -- is broken, and
+    silently. `RunnableWithFallbacks.bind_tools()` returns another
+    RunnableWithFallbacks, so it looks right, but the rate-limit error propagates
+    instead of falling through to the next key.
+
+    Measured on 2026-09-25 with one exhausted key and two healthy ones:
+    `chat_model().invoke(...)` succeeded and
+    `chat_model().bind_tools(...).invoke(...)` raised OpenAIRateLimitError. The
+    orchestrator uses the plain model only for `classify` and the bound model for
+    the whole tool loop, so the half that does the work had no rotation at all
+    while the half that does not had it. Items classified correctly and then made
+    zero tool calls.
+
+    So the fallback chain is composed AFTER binding, not before: bind to each key's
+    model, then compose. `bind_tools` returns a new _RotatingChat rather than a
+    bound Runnable, which is what keeps the property through the orchestrator.
+    """
+
+    def __init__(self, models: list):
+        if not models:
+            raise LLMNotConfigured("No Groq API key configured.")
+        self._models = models
+
+    def _composed(self):
+        primary, *rest = self._models
+        return primary.with_fallbacks(rest) if rest else primary
+
+    def bind_tools(self, tools, **kwargs) -> "_RotatingChat":
+        return _RotatingChat([m.bind_tools(tools, **kwargs) for m in self._models])
+
+    def invoke(self, *args, **kwargs):
+        return self._composed().invoke(*args, **kwargs)
+
+    async def ainvoke(self, *args, **kwargs):
+        return await self._composed().ainvoke(*args, **kwargs)
+
+    def __repr__(self) -> str:
+        return f"_RotatingChat({len(self._models)} key(s))"
+
+
 def chat_model(*, temperature: float = 0.0, **kwargs):
     """A LangChain chat model for the LangGraph orchestrator.
 
-    Groq serves an OpenAI-compatible /v1, so ChatOpenAI talks to it directly. That
+    Groq serves an OpenAI-compatible /v1, so ChatOpenAI reaches it directly. That
     matters because the two official adapters are both unusable here:
     `langchain-groq` pins groq<1.0 (we are on 1.x) and `langchain-mcp-adapters`
-    raises ImportError against MCP 2.x. This route works and keeps us on the
-    framework.
+    raises ImportError against MCP 2.x.
 
     It lives beside `complete()` on purpose. There are two clients -- this one for
     the graph, the raw one for Rob's synthesize() -- but only ONE definition of the
     model and seed, imported from here by both. Two places setting temperature
     independently is how an evaluation stops being reproducible.
 
-    Key rotation is `with_fallbacks`: one client per key, LangChain moves to the
-    next when one fails. Coarser than complete()'s 429-specific retry -- it falls
-    back on any error -- but it is the idiomatic hook and it covers the failure that
-    matters, a throttled key mid-demo.
+    Key rotation: one client per key, wrapped so that binding tools does not
+    silently discard the fallbacks. See _RotatingChat.
     """
     from langchain_openai import ChatOpenAI
 
@@ -232,8 +273,8 @@ def chat_model(*, temperature: float = 0.0, **kwargs):
             "No Groq API key. Copy .env.example to .env and set GROQ_API_KEY."
         )
 
-    def build(key: str):
-        return ChatOpenAI(
+    return _RotatingChat([
+        ChatOpenAI(
             model=_model(),
             api_key=key,
             base_url=GROQ_OPENAI_BASE_URL,
@@ -241,6 +282,5 @@ def chat_model(*, temperature: float = 0.0, **kwargs):
             seed=SEED,
             **kwargs,
         )
-
-    primary, *rest = [build(k) for k in keys]
-    return primary.with_fallbacks(rest) if rest else primary
+        for key in keys
+    ])

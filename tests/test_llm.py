@@ -276,3 +276,65 @@ def test_dotenv_is_loaded_on_package_import():
     """
     import app
     assert hasattr(app, "load_dotenv")
+
+
+# ------------------------------------- key rotation must survive tool binding
+
+def test_binding_tools_does_not_discard_the_fallback_chain(monkeypatch):
+    """The order of composition is load-bearing, and getting it wrong is silent.
+
+    `with_fallbacks([...]).bind_tools(...)` returns another RunnableWithFallbacks,
+    so it looks correct -- and the error propagates instead of falling through to
+    the next key. Binding first and composing after is what actually rotates.
+
+    This mattered more than it looks: the orchestrator uses the plain model only
+    for `classify` and the bound model for the entire tool loop. With the wrong
+    order, the half that does the work had no rotation while the half that does
+    not had it. Items classified fine and then made zero tool calls.
+    """
+    from langchain_core.language_models.fake_chat_models import (
+        FakeMessagesListChatModel,
+    )
+    from langchain_core.messages import AIMessage
+
+    class Exhausted(FakeMessagesListChatModel):
+        def _generate(self, *args, **kwargs):
+            raise RuntimeError("simulated 429")
+
+        def bind_tools(self, tools, **kwargs):
+            return self
+
+    class Healthy(FakeMessagesListChatModel):
+        def bind_tools(self, tools, **kwargs):
+            return self
+
+    tools = [{"type": "function",
+              "function": {"name": "t", "description": "d",
+                           "parameters": {"type": "object", "properties": {}}}}]
+
+    exhausted = Exhausted(responses=[AIMessage(content="unused")])
+    healthy = Healthy(responses=[AIMessage(content="fallback worked")])
+
+    # The wrong order, kept here so the regression is visible rather than folklore.
+    with pytest.raises(RuntimeError):
+        exhausted.with_fallbacks([healthy]).bind_tools(tools).invoke("hi")
+
+    # What llm._RotatingChat.bind_tools does.
+    rotating = llm._RotatingChat([exhausted, healthy])
+    assert rotating.bind_tools(tools).invoke("hi").content == "fallback worked"
+
+
+def test_rotating_chat_keeps_every_key_through_bind_tools(monkeypatch):
+    monkeypatch.setenv("GROQ_API_KEY", "gsk_a")
+    monkeypatch.setenv("GROQ_API_KEY_2", "gsk_b")
+    monkeypatch.setenv("GROQ_API_KEY_3", "gsk_c")
+
+    model = llm.chat_model()
+    assert len(model._models) == 3
+
+    bound = model.bind_tools([{"type": "function",
+                               "function": {"name": "t", "description": "d",
+                                            "parameters": {"type": "object",
+                                                           "properties": {}}}}])
+    assert isinstance(bound, llm._RotatingChat)
+    assert len(bound._models) == 3, "a key was dropped while binding tools"

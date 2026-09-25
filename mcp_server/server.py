@@ -217,10 +217,16 @@ def check_policy_compliance(scenario: str, employee_id: str,
                 "HR tax review required for stays over 30 consecutive days.",
                 "Managed device with full-disk encryption and active VPN required.",
             ],
+            # Contract D ids. These were "remote-work" / "multi-state-work-and-tax" /
+            # "data-security" with numeric sections until 2026-09-25 -- the
+            # pre-Contract-D scheme. The fixtures behind the other two RAG tools were
+            # converted when Eric's corpus landed and this stub was missed, so every
+            # citation built from this tool pointed at a document that does not
+            # exist. Caught by Rob while tracing evidence into synthesize().
             "policy_refs": [
-                {"doc_id": "remote-work", "section": "3.2"},
-                {"doc_id": "multi-state-work-and-tax", "section": "2.1"},
-                {"doc_id": "data-security", "section": "5.4"},
+                {"doc_id": "REMOTE-WORK", "section": "RW-3"},
+                {"doc_id": "TAX-LOCATION", "section": "TAX-2"},
+                {"doc_id": "INFOSEC", "section": "SEC-4"},
             ],
             "rationale": "Out-of-state work beyond 30 days is permitted with approval and tax review.",
         }
@@ -235,7 +241,7 @@ def check_policy_compliance(scenario: str, employee_id: str,
                 if available > 0 else
                 [f"Employee has {available} PTO days available."]
             ),
-            "policy_refs": [{"doc_id": "pto-and-leave", "section": "1.3"}],
+            "policy_refs": [{"doc_id": "PTO-HOLIDAYS", "section": "PTO-3"}],
             "rationale": f"Employee has {available} days available; 3+ day requests need approval.",
         }
     return {
