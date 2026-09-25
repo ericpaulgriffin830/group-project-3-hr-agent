@@ -56,6 +56,21 @@ def _token(action: str, **parts: object) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()[:16]
 
 
+def _normalise_section_id(section_id: str) -> str:
+    """Accept what a search result actually hands back.
+
+    A chunk's `section` field is the id AND the heading -- "SEC-2 Acceptable Use"
+    -- but this tool is keyed on the bare id. An agent that reads the section off a
+    search result and passes it straight back got section_not_found, then guessed
+    at splitting it, burning a tool step per attempt. That is the tool's fault, not
+    the caller's: it advertises a value in one shape and demands another.
+
+    Takes the leading token, which is the id in every document in the corpus
+    (RW-3, SEC-2, PTO-9, HANDBOOK-1). A caller passing the bare id is unaffected.
+    """
+    return (section_id or "").strip().split()[0] if section_id and section_id.strip() else section_id
+
+
 def _err(code: str, message: str, **extra: object) -> dict:
     return {"error": code, "message": message, **extra}
 
@@ -114,6 +129,8 @@ def get_policy_section(doc_id: str, section_id: str) -> dict:
     Use after search_policy_documents when a snippet is not enough and the full
     section text is needed to answer precisely.
     """
+    section_id = _normalise_section_id(section_id)
+
     real = _real_retrieval()
     if real is not None:
         try:
