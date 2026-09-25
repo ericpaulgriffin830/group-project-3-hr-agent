@@ -1,0 +1,145 @@
+[
+  {
+    "id": "PQA-01",
+    "category": "policy_qa",
+    "question": "How much PTO does a full-time exempt employee accrue per year?",
+    "expected": {
+      "intent": "policy_qa",
+      "must_cite_doc_ids": ["PTO-HOLIDAYS"]
+    },
+    "gold_answer": "Accrues at the standard company rate in PTO-2's monthly accrual table.",
+    "notes": "Single-document lookup, single-section answer. Baseline groundedness/citation check."
+  },
+  {
+    "id": "PQA-02",
+    "category": "policy_qa",
+    "question": "What paid holidays does the company observe?",
+    "expected": {
+      "intent": "policy_qa",
+      "must_cite_doc_ids": ["PTO-HOLIDAYS"]
+    },
+    "gold_answer": "The holiday list in PTO-5.",
+    "notes": "Answer must enumerate PTO-5's list exactly; an added or dropped holiday is a groundedness failure."
+  },
+  {
+    "id": "PQA-03",
+    "category": "policy_qa",
+    "question": "How much advance notice do I need to give to request PTO?",
+    "expected": {
+      "intent": "policy_qa",
+      "must_cite_doc_ids": ["PTO-HOLIDAYS"]
+    },
+    "gold_answer": "The standard notice period in PTO-3.",
+    "notes": "Same document as PQA-01/02 but a different section (PTO-3, not PTO-9's blackout notice). Catches an agent that conflates standard notice with the longer blackout-period notice."
+  },
+  {
+    "id": "PQA-04",
+    "category": "policy_qa",
+    "question": "What is the annual home-office stipend amount, and what happens if I spend more than that in one purchase?",
+    "expected": {
+      "intent": "policy_qa",
+      "must_cite_doc_ids": ["EXPENSE"]
+    },
+    "gold_answer": "Up to $500 in the first 90 days, then $250/year thereafter (EXP-2). A purchase over the cap — e.g. a $310 monitor against the $250 annual cap — is reimbursed up to the cap, with the remainder declined absent a pre-discussed exception.",
+    "notes": "Exact dollar figures matter here; this mirrors the real denied claim EXP-3007 in expense_claims.csv, so a scorer can cross-check the number against mock data too."
+  },
+  {
+    "id": "PQA-05",
+    "category": "policy_qa",
+    "question": "If I return company equipment late after leaving the company, what happens?",
+    "expected": {
+      "intent": "policy_qa",
+      "must_cite_doc_ids": ["EQUIPMENT"]
+    },
+    "gold_answer": "Equipment must be returned within 5 business days of last day (EQ-3); if not returned within 30 days it may be treated as unreturned property and its replacement cost may be deducted from final pay to the extent state law allows.",
+    "notes": "Tests recall of both the 5-day and 30-day figures from EQ-3, not just one."
+  },
+  {
+    "id": "PQA-06",
+    "category": "policy_qa",
+    "question": "Is multi-factor authentication required for company systems?",
+    "expected": {
+      "intent": "policy_qa",
+      "must_cite_doc_ids": ["INFOSEC"]
+    },
+    "gold_answer": "Yes, per SEC-5.",
+    "notes": "Simple yes/no plus citation."
+  },
+  {
+    "id": "PQA-07",
+    "category": "policy_qa",
+    "question": "How many weeks of parental leave am I eligible for?",
+    "expected": {
+      "intent": "policy_qa",
+      "must_cite_doc_ids": ["LEAVE"]
+    },
+    "gold_answer": "The duration specified in LEAVE-3.",
+    "notes": "Should not be confused with general FMLA-aligned leave provisions in LEAVE-2."
+  },
+  {
+    "id": "PQA-08",
+    "category": "policy_qa",
+    "question": "When does my health insurance coverage become effective after I'm hired?",
+    "expected": {
+      "intent": "policy_qa",
+      "must_cite_doc_ids": ["BENEFITS"]
+    },
+    "gold_answer": "Per BEN-3's waiting period and effective-date rules.",
+    "notes": "Should not be confused with eligibility rules in BEN-1 or the part-time/contractor carve-outs in BEN-7."
+  },
+  {
+    "id": "MD-01",
+    "category": "multi_document",
+    "question": "I'm a hybrid employee based in Chicago and I want to work from Portugal for about 6 weeks. What do I need to know?",
+    "expected": {
+      "intent": "policy_qa",
+      "must_cite_doc_ids": ["REMOTE-WORK", "TAX-LOCATION", "INFOSEC"]
+    },
+    "gold_answer": "Exceeds the international remote-work cap. RW-4 caps international remote work at 20 business days/year, so a 6-week (~30-business-day) Portugal request needs an exception. TAX-5 explains the foreign tax/payroll exposure that drives Finance/Legal review. SEC-3 requires any device accessing company systems abroad to stay within approved security controls regardless of location.",
+    "notes": "Pure policy-reasoning version of the real Priya Nataraj / TCK-10021 scenario Chris's AG-01-style items exercise with live tool calls — this item is intentionally the no-tool-call, three-document-synthesis version."
+  },
+  {
+    "id": "MD-02",
+    "category": "multi_document",
+    "question": "I'm on approved FMLA leave. Does my PTO keep accruing, and can I use PTO to cover the unpaid portion?",
+    "expected": {
+      "intent": "policy_qa",
+      "must_cite_doc_ids": ["LEAVE", "PTO-HOLIDAYS"]
+    },
+    "gold_answer": "PTO-8 covers accrual/usage treatment during an unpaid leave of absence, and LEAVE-2 covers FMLA coordination; PTO may be used to cover the unpaid portion (LEAVE-7), drawing from the same single PTO bank in PTO-2.",
+    "notes": "Correct answer must cite both documents — citing only one is a partial-groundedness failure."
+  },
+  {
+    "id": "MD-03",
+    "category": "multi_document",
+    "question": "My personal laptop broke. Can I use it for work and get reimbursed for a new one?",
+    "expected": {
+      "intent": "policy_qa",
+      "must_cite_doc_ids": ["EXPENSE", "EQUIPMENT"]
+    },
+    "gold_answer": "No. Core computing equipment is issued by IT under EQUIPMENT, not purchased and reimbursed by the employee; EXP-3 directs a personal-laptop reimbursement request to the equipment request process (EQ-2) instead. Mirrors the real denied claim EXP-3005 for E1007.",
+    "notes": "Tests whether the agent pulls in both the expense exclusion and the equipment-provisioning policy rather than answering from just one."
+  },
+  {
+    "id": "MD-04",
+    "category": "multi_document",
+    "question": "I normally work from our Chicago office, but I need to work from Oregon for 3 weeks this fall. What applies?",
+    "expected": {
+      "intent": "policy_qa",
+      "must_cite_doc_ids": ["REMOTE-WORK", "TAX-LOCATION"]
+    },
+    "gold_answer": "RW-3 governs temporary location changes and requires Finance/Legal review. TAX-2's Registered States list (Illinois, Indiana, Wisconsin, Texas, California, New York, Washington, Colorado, Georgia, Florida, North Carolina, Arizona) does not include Oregon, so TAX-3's nexus/business-registration risk review applies rather than a routine approval.",
+    "notes": "Tests whether the agent knows the full 12-state Registered States list (not just the 4 states with a physical office) before concluding an exception process is required."
+  },
+  {
+    "id": "MD-05",
+    "category": "multi_document",
+    "question": "We're hiring someone who will work remotely from Raleigh, North Carolina. What onboarding and tax steps are needed?",
+    "expected": {
+      "intent": "policy_qa",
+      "must_cite_doc_ids": ["ONBOARDING", "TAX-LOCATION"]
+    },
+    "gold_answer": "ONB-7 covers onboarding for remote/out-of-state hires (remote I-9 verification via ONB-2's notary service). North Carolina is already a Registered State under TAX-2, so standard registered-state payroll setup applies — no new-state exception process needed.",
+    "notes": "Deliberate contrast with MD-04: correct answer should recognize NC is registered while Oregon is not."
+  }
+]
