@@ -231,6 +231,19 @@ def build_graph(client: MCPClient, chat_model: Any):
         word = content.strip().lower().split()[:1]
         intent: Intent = word[0] if word and word[0] in (
             "policy_qa", "workflow", "clarify", "refuse") else "policy_qa"
+
+        # A workflow needs someone to run it for. "Am I eligible for parental
+        # leave?" asked by nobody in particular routes to workflow on the wording
+        # alone, and then there is no record to consult: the agent spends its step
+        # budget on lookups it cannot make and retrieves less policy than the
+        # RAG-only path would have. Measured -- three of Eric's policy items lost
+        # their expected citations exactly this way.
+        #
+        # Downgrading is better than clarifying here: the question is not
+        # ambiguous, it is answerable from policy for anyone. If the caller wants
+        # it personalised they supply an employee_id.
+        if intent == "workflow" and not state.get("employee_id"):
+            intent = "policy_qa"
         escalation = guardrails.classify_escalation(state["question"])
         trace = _trace(state, "intent", result_summary=intent, status="ok")
         if escalation:

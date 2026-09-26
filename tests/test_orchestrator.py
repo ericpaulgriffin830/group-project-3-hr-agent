@@ -31,6 +31,10 @@ class FakeMessage:
         self.tool_calls = tool_calls or []
 
 
+#: Tests that script "workflow" must pass an employee_id. A workflow with no
+#: subject is downgraded to policy_qa on purpose -- see
+#: test_workflow_without_an_employee_id_falls_back_to_policy_qa -- so omitting it
+#: silently routes the test down the RAG-only path and no tool loop runs.
 class FakeChat:
     """A chat model that replays a script.
 
@@ -102,7 +106,8 @@ async def test_tool_loop_is_capped():
         FakeMessage(tool_calls=[tool_call("check_pto_balance", {"employee_id": "E1001"})]),
     ]
     async with connected() as client:
-        out = await answer("loop forever", client=client, chat_model=FakeChat(script))
+        out = await answer("loop forever", client=client, chat_model=FakeChat(script),
+                           employee_id="E1001")
 
     assert len([s for s in out["trace"] if s["type"] == "tool_call"]) == MAX_TOOL_STEPS
 
@@ -116,7 +121,8 @@ async def test_a_failing_tool_does_not_stop_the_graph():
         FakeMessage("I could not find that employee."),
     ]
     async with connected() as client:
-        out = await answer("who is E9999", client=client, chat_model=FakeChat(script))
+        out = await answer("who is E9999", client=client, chat_model=FakeChat(script),
+                           employee_id="E1001")
 
     failed = [s for s in out["trace"] if s.get("status") == "error"]
     assert failed and "employee_not_found" in failed[0]["result_summary"]
@@ -140,7 +146,8 @@ async def test_write_tool_short_circuits_and_creates_nothing():
         FakeMessage("should never be reached"),
     ]
     async with connected() as client:
-        out = await answer("file a ticket", client=client, chat_model=FakeChat(script))
+        out = await answer("file a ticket", client=client, chat_model=FakeChat(script),
+                           employee_id="E1001")
 
     assert out["requires_confirmation"] is True
     assert out["basis"] == "awaiting_confirmation"
@@ -226,7 +233,8 @@ async def test_a_model_failure_does_not_take_the_turn_down():
 
     async with connected() as client:
         out = await answer("anything", client=client,
-                           chat_model=Exploding([FakeMessage("workflow")]))
+                           chat_model=Exploding([FakeMessage("workflow")]),
+                           employee_id="E1001")
 
     assert out["answer"]
     assert any(s["type"] == "guardrail" and s.get("status") == "error"
@@ -353,3 +361,26 @@ async def test_a_model_failure_in_classify_does_not_take_the_turn_down():
                            chat_model=Exploding())
     assert out["answer"]
     assert out["trace"][0]["result_summary"] == "policy_qa"
+
+
+async def test_workflow_without_an_employee_id_falls_back_to_policy_qa():
+    """A workflow needs someone to run it for.
+
+    First-person phrasing ("am I eligible for parental leave?") routes to workflow
+    on wording alone. With no employee_id there is no record to consult, so the
+    agent spends its budget on lookups it cannot make and retrieves less policy
+    than the RAG-only path would have. Three of Eric's policy items lost their
+    expected citations exactly this way.
+    """
+    async with connected() as client:
+        out = await answer("Am I eligible for parental leave?", client=client,
+                           chat_model=FakeChat([FakeMessage("workflow")]))
+    assert out["trace"][0]["result_summary"] == "policy_qa"
+
+
+async def test_workflow_with_an_employee_id_is_left_alone():
+    async with connected() as client:
+        out = await answer("How much PTO do I have?", client=client,
+                           chat_model=FakeChat([FakeMessage("workflow")]),
+                           employee_id="E1001")
+    assert out["trace"][0]["result_summary"] == "workflow"
