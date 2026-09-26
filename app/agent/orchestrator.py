@@ -32,6 +32,16 @@ from app.agent.trace import Trace
 
 MAX_TOOL_STEPS = 6
 
+#: Chunks retrieved on the RAG-only path.
+#:
+#: Tried 10 on 2026-09-26 to widen a single-shot search for multi-document
+#: questions, and it made the answers WORSE: MD-02 went from citing LEAVE and
+#: PTO-HOLIDAYS to citing PTO-HOLIDAYS alone. More evidence did not mean more
+#: citations, because the model writes the answer and then declares which
+#: passages it used -- a wider, noisier context made it lean on fewer. Reverted.
+#: If multi-document coverage needs improving, it is answer.py's prompt, not k.
+RAG_ONLY_K = 5
+
 Intent = Literal["policy_qa", "workflow", "clarify", "refuse"]
 
 CLASSIFY_SYSTEM = """You route HR questions for an internal assistant.
@@ -140,20 +150,25 @@ def _trace(state: AgentState, kind: str, **fields: Any) -> list[dict]:
 
 
 def _diverse_citations(evidence: list[dict], limit: int = 5) -> list[dict]:
-    """Best evidence first, with a second document admitted when it earns it.
+    """Best evidence first, admitting a second document only when it earns it.
 
-    Precision before spread. An earlier version round-robined across every
-    document present, which widened a remote-work answer to cite the tax policy
-    and also made a PTO question cite REMOTE-WORK -- "spread the citations" and
-    "cite the right things" are different goals and only the second is scored.
+    **Fallback only.** This runs when app/rag/answer.py is missing. Once Rob's
+    module is importable, synthesize() picks the citations itself -- the model
+    declares which passages it used in a META trailer and he cross-references
+    those against the evidence. Kept because the fallback still has to produce
+    something honest, but changing it does not change production behaviour, which
+    cost me two commits' worth of tuning on 2026-09-26 before I checked.
+
+    Precision before spread. Round-robining across every document present made a
+    PTO question cite REMOTE-WORK, because "spread the citations" and "cite the
+    right things" are different goals and only the second is scored. A per-document
+    cap was tried instead and reintroduced the same failure from the other side.
 
     **Ranking falls back to arrival order when scores are flat.** retrieve()
-    currently returns every chunk with score 0.0: the RRF fusion computes a score,
-    orders by it, and never writes it back into the chunk. The ORDER is therefore
-    correct and the NUMBER is not, so sorting by score alone silently degraded to
-    "whatever order Python's sort happened to leave" -- which is why this function
-    appeared to work inconsistently. Arrival order is the retrieval rank, because
-    the orchestrator extends evidence in the order each search returned it.
+    returns every chunk with score 0.0: RRF computes a score, orders by it, and
+    never writes it back. The ORDER is correct and the NUMBER is not, so sorting
+    by score alone degraded to whatever order sort happened to leave. Arrival
+    order IS the retrieval rank, because evidence is extended in return order.
     """
     RELEVANCE_FLOOR = 0.4
 
@@ -161,10 +176,8 @@ def _diverse_citations(evidence: list[dict], limit: int = 5) -> list[dict]:
         return []
 
     scored = any(c.get("score", 0) for c in evidence)
-    if scored:
-        ranked = sorted(evidence, key=lambda c: c.get("score", 0), reverse=True)
-    else:
-        ranked = list(evidence)
+    ranked = (sorted(evidence, key=lambda c: c.get("score", 0), reverse=True)
+              if scored else list(evidence))
 
     picked = ranked[:limit]
     if len({c.get("doc_id") for c in picked}) > 1:
@@ -177,9 +190,6 @@ def _diverse_citations(evidence: list[dict], limit: int = 5) -> list[dict]:
                           if c.get("doc_id") != incumbent
                           and c.get("score", 0) >= best * RELEVANCE_FLOOR), None)
     else:
-        # No usable scores: admit the best-ranked chunk from the next document,
-        # but only from within the window we already considered relevant. Reaching
-        # past it would cite something retrieval ranked below everything shown.
         window = ranked[: max(limit * 2, limit + 3)]
         runner_up = next((c for c in window
                           if c.get("doc_id") != incumbent), None)
@@ -280,9 +290,14 @@ def build_graph(client: MCPClient, chat_model: Any):
         }
 
     async def retrieve(state: AgentState) -> dict:
-        """RAG-only path: one retrieval, straight to synthesis."""
+        """RAG-only path: one retrieval, straight to synthesis.
+
+        This path gets ONE search and no second angle, while the workflow path can
+        search repeatedly from different framings. Widening k looked like the fix
+        for multi-document coverage and measurably was not -- see RAG_ONLY_K.
+        """
         call = await client.call("search_policy_documents",
-                                 query=state["question"], k=5)
+                                 query=state["question"], k=RAG_ONLY_K)
         chunks = call.payload.get("chunks", []) if call.ok else []
         return {
             "evidence": chunks,
