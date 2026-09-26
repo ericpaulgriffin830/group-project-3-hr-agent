@@ -90,11 +90,18 @@ one policy - then CALL THE TOOL. Explaining how the user could do it themselves 
 not doing it. Researching an action request until the step budget runs out means
 they asked you to act and you never did.
 
-CHECK THE RECORD, NOT JUST THE POLICY. Questions about someone's eligibility,
-balances or elections are answered by their record: use check_pto_balance or
-lookup_benefits_status. The policy says what the rule is; the record says what is
-true for this person. Citing the rule without checking the record is how you tell
-a contractor "it depends" when the answer is a flat no.
+CHECK THE RECORD, NOT JUST THE POLICY. The policy says what the rule is; the
+record says what is true for this person, and only the record is authoritative
+about them.
+
+- benefits, plans, eligibility, enrolment -> lookup_benefits_status
+- time off, days remaining, blackout dates -> check_pto_balance
+
+`employment_type` from lookup_employee_profile is NOT a benefits answer. Reading
+"contractor" off a profile and applying the general rule skips the one source that
+would show an exception, and an exception is exactly the case worth getting right.
+Look up the profile to learn WHO is asking, then look up the record that governs
+WHAT they asked about. Both, not one.
 """
 
 
@@ -133,42 +140,53 @@ def _trace(state: AgentState, kind: str, **fields: Any) -> list[dict]:
 
 
 def _diverse_citations(evidence: list[dict], limit: int = 5) -> list[dict]:
-    """Best chunks by score, nudged to include a second document when one earns it.
+    """Best evidence first, with a second document admitted when it earns it.
 
-    Precision first. An earlier version round-robined across every document that
-    appeared in the evidence, which did widen a remote-work answer to cite the tax
-    policy -- and also made a PTO question cite REMOTE-WORK and TAX-LOCATION,
-    because "spread the citations" and "cite the right things" are not the same
-    goal. Citation accuracy scores the second one.
+    Precision before spread. An earlier version round-robined across every
+    document present, which widened a remote-work answer to cite the tax policy
+    and also made a PTO question cite REMOTE-WORK -- "spread the citations" and
+    "cite the right things" are different goals and only the second is scored.
 
-    So: take the top `limit` by score. If they all came from one document, give up
-    the weakest slot to the best chunk from the next document, but only if that
-    chunk is within RELEVANCE_FLOOR of the best chunk overall. A genuinely
-    single-document question keeps citing one document.
+    **Ranking falls back to arrival order when scores are flat.** retrieve()
+    currently returns every chunk with score 0.0: the RRF fusion computes a score,
+    orders by it, and never writes it back into the chunk. The ORDER is therefore
+    correct and the NUMBER is not, so sorting by score alone silently degraded to
+    "whatever order Python's sort happened to leave" -- which is why this function
+    appeared to work inconsistently. Arrival order is the retrieval rank, because
+    the orchestrator extends evidence in the order each search returned it.
     """
     RELEVANCE_FLOOR = 0.4
 
-    ranked = sorted(evidence, key=lambda c: c.get("score", 0), reverse=True)
-    if not ranked:
+    if not evidence:
         return []
+
+    scored = any(c.get("score", 0) for c in evidence)
+    if scored:
+        ranked = sorted(evidence, key=lambda c: c.get("score", 0), reverse=True)
+    else:
+        ranked = list(evidence)
 
     picked = ranked[:limit]
     if len({c.get("doc_id") for c in picked}) > 1:
         return picked
 
-    best_score = ranked[0].get("score", 0) or 1
     incumbent = picked[0].get("doc_id")
-    runner_up = next(
-        (c for c in ranked
-         if c.get("doc_id") != incumbent
-         and c.get("score", 0) >= best_score * RELEVANCE_FLOOR),
-        None,
-    )
-    if runner_up is not None and len(picked) == limit:
-        picked = picked[: limit - 1] + [runner_up]
-    elif runner_up is not None:
-        picked = picked + [runner_up]
-    return picked
+    if scored:
+        best = ranked[0].get("score", 0) or 1
+        runner_up = next((c for c in ranked
+                          if c.get("doc_id") != incumbent
+                          and c.get("score", 0) >= best * RELEVANCE_FLOOR), None)
+    else:
+        # No usable scores: admit the best-ranked chunk from the next document,
+        # but only from within the window we already considered relevant. Reaching
+        # past it would cite something retrieval ranked below everything shown.
+        window = ranked[: max(limit * 2, limit + 3)]
+        runner_up = next((c for c in window
+                          if c.get("doc_id") != incumbent), None)
+
+    if runner_up is None:
+        return picked
+    return (picked[: limit - 1] + [runner_up]) if len(picked) == limit else picked + [runner_up]
 
 
 def _synthesize(question: str, evidence: list[dict], tool_results: list[dict],

@@ -384,3 +384,29 @@ async def test_workflow_with_an_employee_id_is_left_alone():
                            chat_model=FakeChat([FakeMessage("workflow")]),
                            employee_id="E1001")
     assert out["trace"][0]["result_summary"] == "workflow"
+
+
+def test_citations_fall_back_to_arrival_order_when_scores_are_flat():
+    """retrieve() returns every chunk with score 0.0 today.
+
+    RRF computes a score, orders by it, and never writes it back. The order is
+    right and the number is not, so sorting by score alone degraded to whatever
+    order sort happened to leave -- which is why citation selection looked
+    inconsistent. Arrival order IS the retrieval rank.
+    """
+    evidence = [_chunk("LEAVE", 0.0), _chunk("PTO-HOLIDAYS", 0.0),
+                _chunk("LEAVE", 0.0), _chunk("ONBOARDING", 0.0)]
+    got = _diverse_citations(evidence, limit=3)
+    assert [c["doc_id"] for c in got] == ["LEAVE", "PTO-HOLIDAYS", "LEAVE"]
+
+
+def test_flat_scores_still_admit_a_second_document():
+    evidence = [_chunk("PTO-HOLIDAYS", 0.0) for _ in range(5)] + [_chunk("LEAVE", 0.0)]
+    got = _diverse_citations(evidence, limit=5)
+    assert {c["doc_id"] for c in got} == {"PTO-HOLIDAYS", "LEAVE"}
+
+
+def test_real_scores_are_still_preferred_when_present():
+    """When Rob writes the RRF score back, score-based ranking takes over again."""
+    evidence = [_chunk("A", 0.2), _chunk("B", 0.9), _chunk("A", 0.5)]
+    assert [c["score"] for c in _diverse_citations(evidence, limit=2)] == [0.9, 0.5]
