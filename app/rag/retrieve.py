@@ -70,6 +70,39 @@ MAX_CHUNKS_PER_DOC = 2
 #: from, rather than fusing only exactly k candidates from each side.
 CANDIDATE_POOL = 20
 
+#: Relevance floor on the vector leg's raw cosine similarity (before RRF
+#: fusion -- RRF's own output is a rank-based score, not a magnitude, so it
+#: cannot tell a strong match from the least-bad of a pool of noise; only the
+#: leg's own pre-fusion score can). Unlike the fixture-phase keyword ranker
+#: this module replaced (mcp_server/fixtures.py's rank_chunks drops any
+#: chunk scoring <= 0), fastembed's vector search has no floor of its own --
+#: it always returns its k nearest neighbors, however weak the actual match.
+#: A query this corpus has nothing to do with therefore never came back
+#: empty, and the orchestrator's "no evidence -> refuse rather than guess"
+#: guard (app/agent/orchestrator.py) could never fire on the RAG-only path.
+#:
+#: Chosen from measured separation, not a round number: every full-sentence
+#: question in both eval sets (evaluation/eval_set.*.json), including the
+#: hardest multi-document ones, scores >= 0.67 on the vector leg alone.
+#: Nonsense strings ("unanswerable", keyboard mashing, an off-topic sentence)
+#: top out around 0.56. A short, single real-word query ("dental", "tax") can
+#: fall as low as 0.56 too, inside the nonsense range -- but a real corpus
+#: word always gives BM25 a positive keyword match, so retrieve() only
+#: refuses a query that clears NEITHER leg (below this floor on vector AND
+#: zero BM25 hits) -- see the relevance gate in retrieve() below.
+#:
+#: Known gap, not fixed here: the BM25 rescue is "any hit at all", and in a
+#: 106-chunk corpus a globally common English word absent from _STOPWORDS
+#: (e.g. "like") can be rare enough WITHIN the corpus to get a real, sizeable
+#: BM25 score off a single incidental match -- "I like turtles and
+#: spaceships" clears the gate this way (BM25 hit on "like" alone), even
+#: though nothing about the query is HR-related. Narrowing this would mean
+#: growing _STOPWORDS or requiring more than one surviving token to match,
+#: which risks re-breaking the single-real-word rescue this constant exists
+#: for ("dental", "tax") and needs its own tuning pass against the corpus,
+#: not a quick addition here.
+MIN_VECTOR_RELEVANCE = 0.6
+
 _STOPWORDS = frozenset((
     "the", "and", "for", "that", "this", "with", "from", "have", "can", "are",
     "what", "when", "does", "do", "i", "my", "me", "a", "an", "is", "it", "to",
@@ -198,10 +231,19 @@ def retrieve(query: str, k: int = 5, doc_filter: list[str] | None = None,
     doc_id_of: dict[str, str] = {cid: v["doc_id"] for cid, v in by_id.items()}
     vector_ids = [v["chunk_id"] for v in vector_hits]
 
+    # Relevance gate (see MIN_VECTOR_RELEVANCE above): computed for BOTH modes,
+    # including vector_only, because the gate is about whether the query has
+    # anything to do with this corpus at all, not about which ranking method
+    # is under test. Cheap either way -- _bm25_index() is process-cached.
+    bm25_ids, bm25_chunks = _bm25_ranked_ids(query, doc_filter, pool)
+    top_vector_score = vector_hits[0]["score"] if vector_hits else 0.0
+    if top_vector_score < MIN_VECTOR_RELEVANCE and not bm25_ids:
+        return {"chunks": [],
+                "retrieval_mode": "vector_only" if mode == "vector_only" else "hybrid"}
+
     if mode == "vector_only":
         fused_order = vector_ids
     else:
-        bm25_ids, bm25_chunks = _bm25_ranked_ids(query, doc_filter, pool)
         for cid, chunk in bm25_chunks.items():
             doc_id_of.setdefault(cid, chunk.doc_id)
         fused_scores = _rrf_fuse(vector_ids, bm25_ids)

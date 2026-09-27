@@ -222,39 +222,55 @@ def test_clean_answer_leaves_unlabeled_text_untouched():
 
 
 def test_parse_completion_well_formed_meta_block():
-    answer, cited, flags = _parse_completion(META_OK, fallback_ids=["FALLBACK"])
+    answer, cited, flags, trailer_ok = _parse_completion(META_OK, fallback_ids=["FALLBACK"])
     assert answer == "The answer text goes here."
     assert cited == ["PTO-HOLIDAYS"]
+    assert flags == []
+    assert trailer_ok is True
+
+
+def test_parse_completion_well_formed_but_validly_empty_cited_doc_ids_is_trusted():
+    # The model read the evidence and correctly used none of it -- this is a real
+    # answer ("nothing here applies"), not a parsing failure, so trailer_ok must
+    # be True and cited must stay [] rather than being replaced by fallback_ids.
+    raw = 'Answer.\n\nMETA:\n{"cited_doc_ids": [], "unsupported_flags": []}'
+    answer, cited, flags, trailer_ok = _parse_completion(raw, fallback_ids=["A", "B"])
+    assert cited == []
+    assert trailer_ok is True
     assert flags == []
 
 
 def test_parse_completion_missing_meta_block_falls_back():
-    answer, cited, flags = _parse_completion("Just an answer, no trailer.", fallback_ids=["A", "B"])
+    answer, cited, flags, trailer_ok = _parse_completion("Just an answer, no trailer.", fallback_ids=["A", "B"])
     assert answer == "Just an answer, no trailer."
     assert cited == ["A", "B"]
     assert len(flags) == 1 and "META block" in flags[0]
+    assert trailer_ok is False
 
 
 def test_parse_completion_malformed_json_falls_back():
     raw = "Answer text.\n\nMETA:\n{not valid json}"
-    answer, cited, flags = _parse_completion(raw, fallback_ids=["A"])
+    answer, cited, flags, trailer_ok = _parse_completion(raw, fallback_ids=["A"])
     assert cited == ["A"]
     assert any("not valid JSON" in f for f in flags)
+    assert trailer_ok is False
 
 
 def test_parse_completion_missing_cited_doc_ids_key_falls_back():
     raw = 'Answer.\n\nMETA:\n{"unsupported_flags": ["something"]}'
-    answer, cited, flags = _parse_completion(raw, fallback_ids=["A"])
+    answer, cited, flags, trailer_ok = _parse_completion(raw, fallback_ids=["A"])
     assert cited == ["A"]
     assert "something" in flags  # original flag preserved
     assert any("cited_doc_ids missing" in f for f in flags)
+    assert trailer_ok is False
 
 
 def test_parse_completion_non_string_cited_doc_ids_falls_back():
     raw = 'Answer.\n\nMETA:\n{"cited_doc_ids": [1, 2], "unsupported_flags": []}'
-    _, cited, flags = _parse_completion(raw, fallback_ids=["A"])
+    _, cited, flags, trailer_ok = _parse_completion(raw, fallback_ids=["A"])
     assert cited == ["A"]
     assert any("cited_doc_ids missing" in f for f in flags)
+    assert trailer_ok is False
 
 
 # ---------------------------------------------------------------------------
@@ -404,6 +420,28 @@ def test_synthesize_drops_a_hallucinated_citation_not_in_the_evidence():
     # of returning zero citations for a question that DID have real evidence.
     assert out["citations"][0]["doc_id"] == "PTO-HOLIDAYS"
     assert any("did not name a resolvable citation" in f for f in out["unsupported_flags"])
+
+
+def test_synthesize_model_correctly_declining_all_evidence_refuses_not_policy_rag():
+    # Regression: retrieve() always returns its top-k nearest neighbors even for
+    # a question none of the corpus covers (no relevance floor on the vector
+    # leg), so `chunks` here is realistically non-empty evidence that the model
+    # correctly determines is irrelevant. Before this fix, an empty, validly
+    # parsed cited_doc_ids was indistinguishable from a parsing failure and got
+    # silently converted into a "policy_rag" answer citing the top 3 irrelevant
+    # passages -- the orchestrator's own "no evidence, no guess" refusal guard
+    # (app/agent/orchestrator.py) never got a chance to matter because synthesize()
+    # had already manufactured citations out of noise.
+    completion = _completion(
+        "None of the provided passages address this.\n\n"
+        'META:\n{"cited_doc_ids": [], "unsupported_flags": []}')
+    with patch.object(answer_module, "complete", return_value=completion):
+        out = synthesize("unanswerable", chunks=[_rich_chunk(doc_id="REMOTE-WORK")],
+                         tool_results=[], mode="policy")
+    assert out["citations"] == []
+    assert out["basis"] == "refused"
+    assert out["confidence"] == 0.0
+    assert not any("did not name a resolvable citation" in f for f in out["unsupported_flags"])
 
 
 def test_synthesize_ignores_evidence_beyond_max_prompt_chunks_window():
