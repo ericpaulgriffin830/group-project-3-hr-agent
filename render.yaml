@@ -1,0 +1,80 @@
+# Render Blueprint. Two free Web Services, per docs/DEPLOYMENT-NOTES.md -- the
+# FastAPI backend (Contract B: /chat, /health) and the Streamlit UI, kept
+# separate so each gets its own 512 MB instance rather than splitting one
+# instance three ways (FastAPI + Chroma + the embedding model already live in
+# the API process; adding Streamlit on top of that made the memory problem
+# worse, not better).
+#
+# The MCP server does NOT get its own service -- it runs in-process with the
+# API over stdio (MCP_TRANSPORT), which is the free-tier-friendly setup
+# docs/DEPLOYMENT-NOTES.md settled on.
+#
+# Both services must bind 0.0.0.0:$PORT, not 127.0.0.1 or a hardcoded port --
+# the two traps already hit on a real deploy attempt (Start Command holding a
+# label instead of a shell command, and a hardcoded/loopback bind) are exactly
+# what section 6 of docs/DEPLOYMENT-NOTES.md warns about.
+#
+# Deploy from the GROUP repo (Rob-Ottogalli/quantic-hr-ai-rag-group-project),
+# not a personal mirror -- section 5. Render reads this file when the
+# Blueprint is created against that repo; it is not applied automatically on
+# every push unless auto-deploy is left on for each service.
+
+services:
+  - type: web
+    name: hr-agent-api
+    runtime: python
+    plan: free
+    region: oregon
+    branch: main
+    # scripts/build_index.py populates data/chroma from corpus/policies/*. It
+    # has to run on every deploy, not just once locally -- the free tier has
+    # no persistent disk, and data/chroma is gitignored on purpose (it's a
+    # build artifact of the corpus, not source), so nothing survives from one
+    # deploy to the next without rebuilding it here.
+    buildCommand: "pip install uv && uv sync --locked && uv run python -m scripts.build_index"
+    startCommand: "uv run uvicorn app.api:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"
+      # Secrets -- set once in the Render dashboard (Environment tab), never
+      # committed. sync: false means "this var exists, Render will prompt for
+      # a value" rather than a blueprint-managed value.
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_API_KEY_2
+        sync: false
+      - key: GROQ_API_KEY_3
+        sync: false
+      - key: GROQ_MODEL
+        value: "openai/gpt-oss-120b"
+      - key: MCP_TRANSPORT
+        value: "stdio"
+      - key: LOG_LEVEL
+        value: "INFO"
+      - key: CHROMA_PATH
+        value: "./data/chroma"
+      - key: EMBED_MODEL
+        value: "BAAI/bge-small-en-v1.5"
+      - key: RETRIEVAL_K
+        value: "5"
+
+  - type: web
+    name: hr-agent-ui
+    runtime: python
+    plan: free
+    region: oregon
+    branch: main
+    buildCommand: "pip install uv && uv sync --locked"
+    startCommand: "uv run streamlit run ui/streamlit_app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true --server.enableCORS false --server.enableXsrfProtection false"
+    envVars:
+      # Render's `fromService` only hands back a bare hostname, not a scheme --
+      # httpx needs the full "https://..." URL, so this is set by hand rather
+      # than templated. After the first deploy, copy hr-agent-api's public URL
+      # (Render dashboard -> hr-agent-api -> the URL under its name) into this
+      # service's Environment tab as API_BASE_URL, then redeploy hr-agent-ui.
+      # sync: false means "Render will prompt for a value", not "leave blank".
+      - key: API_BASE_URL
+        sync: false
+      - key: PYTHON_VERSION
+        value: "3.12"

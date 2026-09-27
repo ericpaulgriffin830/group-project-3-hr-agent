@@ -204,7 +204,13 @@ def parse_document(doc_meta: dict) -> ParsedDocument:
         effective_date=doc_meta["effective_date"],
         owner=doc_meta["owner"],
         applies_to=doc_meta.get("applies_to"),
-        source_path=str(path.relative_to(ROOT)),
+        # .as_posix(), not str(): relative_to() keeps the host OS's separator,
+        # so str() gives "corpus\\policies\\x.md" on Windows. This path is a
+        # repo-relative identifier used elsewhere (citations, tests asserting
+        # its shape), not a filesystem path this process reopens -- it has to
+        # be the same string on every contributor's machine and in CI's three
+        # OSes, not just usable on the one that produced it.
+        source_path=path.relative_to(ROOT).as_posix(),
         sections=sections,
     )
 
