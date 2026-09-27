@@ -88,20 +88,27 @@ anything.
 
 ### Eric
 
-- [ ] **`app/api.py`** — `/chat` and `/health`. Contract B. → blocks deployment and
-  the UI
-- [ ] **`ui/streamlit_app.py`** — chat, citation cards, trace panel, confirmation
-  dialog, health badge, two "Run demo task" buttons
-- [ ] **`render.yaml` + deploy.** Two free Web Services. Details and the free-tier
-  limits are in `docs/DEPLOYMENT-NOTES.md`
-- [ ] **CI has no Linux runner, no pytest step, no deploy job.** 273 tests exist and
-  CI runs none of them. Render is Linux and CI never tests Linux. The brief
-  requires deployment be gated on tests passing — that gate does not exist.
-  Deploy trigger is a **deploy hook** in GitHub secrets; no Render API key needed
-- [ ] `evaluation/run_eval.py` — the harness
+- [X] **`app/api.py`** — `/chat` and `/health`. Contract B. Done, tested, deployed.
+- [X] **`ui/streamlit_app.py`** — chat, citation cards, trace panel, confirmation
+  dialog, health badge, two "Run demo task" buttons. Done, verified against both
+  demo tasks and free-form questions.
+- [X] **`render.yaml` + deploy.** Two free Web Services, live on Eric's personal
+  mirror (`hr-agent-api`, `hr-agent-ui`) — both healthy, index built at deploy time.
+  Rob repeating the same Blueprint on the group repo next, since that's what has
+  to produce the graded URL.
+- [X] **`scripts/build_index.py`** (was never written — `app/rag/store.py`
+  referenced it but it didn't exist, which is why `/health` showed
+  `index_ready: false` even locally). Runs at build time on Render too.
+- [ ] **CI has a pytest step and a deploy-gate job now**, pasted into
+  `.github/workflows/ci.yml` (workflow files can't be edited via the remote
+  device bridge). Still need: the two Render deploy-hook URLs added as GitHub
+  secrets (`RENDER_DEPLOY_HOOK_API`, `RENDER_DEPLOY_HOOK_UI`) before the deploy
+  job can actually fire.
+- [X] `evaluation/run_eval.py` — the scoring harness. First full run below.
+- [X] Policy-Q&A eval items → `evaluation/eval_set.eric.json` (13 items)
 - [ ] Eval items for retrieval quality → `evaluation/eval_set.rob.json`
-- [ ] Policy-Q&A eval items → `evaluation/eval_set.eric.json`
-- [ ] `deployed.md`, and the deployed URL in `README.md`
+- [ ] `deployed.md`, and the deployed URL in `README.md` — blocked on Rob's
+  group-repo deploy URL
 
 ### Chris
 
@@ -116,10 +123,11 @@ anything.
 
 ### Everyone
 
-- [ ] **Groq API keys to Chris.** `app/llm.py` rotates across three; we have one.
-  Chris's daily token limit hit zero mid-evaluation on 9/23 — 200k tokens/day,
-  and a rehearsal plus a recording on 10/1 is easily 30+ agent turns. The
-  rotation is built and unarmed. → **do this today**
+- [X] **Groq API keys rotated in.** All three of us now have all three keys in our
+  local `.env`s. Fixed a real bug along the way: with only one key configured,
+  `_RotatingChat`'s fallback list is empty, so a 429 just eats OpenAI's own retry
+  backoff with nowhere to go — worth remembering if anyone's `.env` reverts to one
+  key.
 - [ ] Your paragraph in `ai-tooling.md` (nobody owns creating the file — Chris will)
 - [ ] `quantic-grader` accepted on your own mirror. Chris's is accepted; check yours
 - [ ] Government ID in hand for 10/1 — the brief requires all three on camera with it
@@ -135,11 +143,11 @@ not merge-conflicting one array.
 | Author | Items        | Covers                                                                      |
 | ------ | ------------ | --------------------------------------------------------------------------- |
 | Chris  | **14** | agentic, tool-requiring, ambiguous, out-of-scope, action-safety, escalation |
-| Eric   | 0            | policy Q&A gold answers for the corpus he wrote                             |
+| Eric   | **13** | policy Q&A gold answers for the corpus he wrote                             |
 | Rob    | 0            | retrieval quality, expected`doc_id` citations                             |
 
-The brief wants 20–30. We need roughly 12 more, split between Eric and Rob, before
-Monday's freeze.
+27 items total — close to the brief's 20–30, but still need Rob's retrieval-quality
+set before the freeze.
 
 **Every item is run before it is committed.** `evaluation/verify_expectations.py`
 executes each one against the live system and reports whether its `expected` block
@@ -153,6 +161,22 @@ ran out so "file a ticket" returned advice, a correct refusal being silently
 overwritten and lost, and a model failure in `classify` taking the whole turn down.
 All fixed. **10/14 now**; two are blocked on `synthesize()` and one is unverified
 because the token budget ran out.
+
+**`run_eval.py`'s first full pass, all 27 items, 2026-09-27** (post-`synthesize()`):
+
+```
+intent               25/26 (96%)
+tool_selection       10/10 (100%)
+citations            11/15 (73%)
+confirmation_gate    14/14 (100%)
+escalation           14/14 (100%)
+answer_content       2/2 (100%)
+```
+
+Per category, `multi_document` is the outlier: 2/5 fully correct, versus 100% on
+every other category. See `evaluation/results.json` for which items and which
+missing `doc_id`s — not yet root-caused, worth a look before recording since it's
+the one number here that isn't near-perfect.
 
 ---
 
@@ -169,14 +193,20 @@ because the token budget ran out.
   in the evaluation — the brief asks for it.
 - **AG-03, AG-06** in the eval set carry an explicit `blocked_on` for `synthesize()`
   rather than a weakened expectation. They check answer text, which cannot pass
-  until the prose exists.
+  until the prose exists. Re-check these now that `synthesize()` is live.
+- **`multi_document` citation accuracy is 73% overall, 2/5 fully correct in that
+  category specifically** (`run_eval.py`, 2026-09-27) — questions needing citations
+  from more than one policy doc most often come back with only one of the required
+  `doc_id`s. Every other check is 100%. See `evaluation/results.json` for the exact
+  items before recording; if it's still unresolved by 10/1, narrate it as a known
+  limitation rather than let it surprise the demo.
 
 ---
 
 ## Reference
 
 | Document                     | What it is                                                                         |
-| ---------------------------- | ---------------------------------------------------------------------------------- |
+| ----------------------------- | ---------------------------------------------------------------------------------- |
 | `docs/CONTRACTS.md`        | Contracts A–D: tool schemas,`/chat` envelope, `synthesize()`, doc-id registry |
 | `docs/DEMO-TASKS.md`       | The two agentic tasks and their MCP call sequences                                 |
 | `docs/DEPLOYMENT-NOTES.md` | Render product choice, free-tier limits, the dependency measurement                |
