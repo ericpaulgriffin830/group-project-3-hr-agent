@@ -15,6 +15,7 @@ import glob
 import json
 import pathlib
 import sys
+import time
 
 # Run as a script from anywhere: put the repo root on the path before importing.
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
@@ -23,6 +24,19 @@ from app import llm
 from app.agent.mcp_client import MCPClient
 from app.agent.orchestrator import answer
 from mcp_server.server import mcp
+
+
+def _throttled(out: dict) -> bool:
+    """Did this turn lose a model call to rate limiting?
+
+    The orchestrator records it as a guardrail step with status error rather than
+    raising, so it is visible in the trace and invisible in the answer.
+    """
+    return any(
+        s.get("type") == "guardrail" and s.get("status") == "error"
+        and "ratelimit" in str(s.get("result_summary", "")).lower()
+        for s in out.get("trace", [])
+    )
 
 
 def check(item: dict, out: dict) -> list[str]:
@@ -59,28 +73,101 @@ def check(item: dict, out: dict) -> list[str]:
     return fails
 
 
-async def main(pattern: str) -> int:
+#: How many items run at once. Each item is several LLM round trips and they are
+#: independent, so the run is almost entirely waiting -- serial execution spent
+#: minutes doing nothing.
+#:
+#: The binding constraint is Groq tokens-per-minute across all three keys, not
+#: parallelism: measured, 3 of 10 concurrent runs of one item hit
+#: OpenAIRateLimitError, and a turn spends ~73% of its time inside synthesize()
+#: generating prose. Adding workers past this buys throttling, not throughput.
+#:
+#: 6 with a serial retry of anything throttled beats 4 without one: the wide pass
+#: absorbs most of the set and only the casualties pay for a second attempt,
+#: instead of every item paying a lower ceiling to protect a handful.
+#:
+#: The failures are quiet, which is the real hazard. The orchestrator catches a
+#: model failure and falls through to synthesis with whatever evidence it has --
+#: correct behaviour for a live user, but it means a throttled evaluation run
+#: reports plausible wrong answers rather than errors. Hence the warning below.
+DEFAULT_CONCURRENCY = 6
+
+
+async def _run_one(item: dict, model, semaphore: asyncio.Semaphore) -> tuple[dict, list[str]]:
+    """One item, on its own MCP session.
+
+    A session per item rather than one shared across tasks: MCP's ClientSession
+    runs an anyio task group, and interleaving calls from several tasks through
+    one session is not something it promises to survive. In-process sessions are
+    cheap, so the safe thing is also the easy thing.
+    """
+    async with semaphore:
+        async with MCPClient(server=mcp) as client:
+            await client.discover()
+            out = await answer(item["question"], client=client, chat_model=model,
+                               employee_id=item.get("employee_id"))
+    return item, check(item, out), _throttled(out)
+
+
+async def main(pattern: str, concurrency: int = DEFAULT_CONCURRENCY) -> int:
     items = []
     for path in sorted(glob.glob(pattern)):
         items.extend(json.load(open(path)))
 
+    started = time.monotonic()
+    semaphore = asyncio.Semaphore(concurrency)
+    model = llm.chat_model()
+
+    results = await asyncio.gather(
+        *(_run_one(item, model, semaphore) for item in items),
+        return_exceptions=True,
+    )
+
+    # Retry whatever got throttled, serially. Lowering concurrency for the whole
+    # set to protect a handful of items pays the cost on every item; a throttled
+    # item is usually fine on a quiet retry. This is what makes a higher default
+    # safe: the fast path runs wide, and only the casualties pay for it.
+    retry_slots = [i for i, r in enumerate(results)
+                   if not isinstance(r, BaseException) and r[2]]
+    if retry_slots:
+        print(f"({len(retry_slots)} item(s) throttled — retrying serially)\n")
+        solo = asyncio.Semaphore(1)
+        for i in retry_slots:
+            results[i] = await _run_one(items[i], model, solo)
+
+    # Report in file order, not completion order -- a result set that reshuffles
+    # every run is hard to diff against the last one.
     failed = 0
-    async with MCPClient(server=mcp) as client:
-        await client.discover()
-        model = llm.chat_model()
-        for item in items:
-            out = await answer(item["question"], client=client, chat_model=model,
-                               employee_id=item.get("employee_id"))
-            fails = check(item, out)
-            status = "PASS" if not fails else "FAIL"
-            failed += bool(fails)
-            print(f"{status}  {item['id']:8} {item['category']:24} {item['question'][:44]}")
-            for f in fails:
-                print(f"         - {f}")
-    print(f"\n{len(items) - failed}/{len(items)} expectations hold")
+    degraded = 0
+    for item, outcome in zip(items, results):
+        if isinstance(outcome, BaseException):
+            failed += 1
+            print(f"ERROR {item['id']:8} {type(outcome).__name__}: {outcome}")
+            continue
+        _, fails, throttled = outcome
+        failed += bool(fails)
+        if throttled:
+            degraded += 1
+        print(f"{'PASS' if not fails else 'FAIL'}  {item['id']:8} "
+              f"{item['category']:24} {item['question'][:44]}")
+        for f in fails:
+            print(f"         - {f}")
+
+    elapsed = time.monotonic() - started
+    print(f"\n{len(items) - failed}/{len(items)} expectations hold "
+          f"({elapsed:.0f}s, concurrency {concurrency})")
+
+    if degraded:
+        print(f"\nWARNING: {degraded} item(s) were still throttled after a serial "
+              f"retry. Those results are not trustworthy -- the agent degrades "
+              f"gracefully on a throttled call, so a failure there may be the rate "
+              f"limit rather than the agent. Re-run with --concurrency=1.")
     return 1 if failed else 0
 
 
 if __name__ == "__main__":
-    pattern = sys.argv[1] if len(sys.argv) > 1 else "evaluation/eval_set.*.json"
-    raise SystemExit(asyncio.run(main(pattern)))
+    args = [a for a in sys.argv[1:] if not a.startswith("-")]
+    pattern = args[0] if args else "evaluation/eval_set.*.json"
+    conc = next((int(a.split("=")[1]) for a in sys.argv[1:]
+                 if a.startswith("--concurrency=")), DEFAULT_CONCURRENCY)
+    raise SystemExit(asyncio.run(main(pattern, conc)))

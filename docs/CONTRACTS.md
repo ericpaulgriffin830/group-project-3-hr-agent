@@ -140,8 +140,8 @@ It is NOT chain-of-thought. The brief explicitly forbids exposing hidden reasoni
 ```python
 def synthesize(
     question: str,
-    chunks: list[Chunk],
-    tool_results: dict | None = None,
+    chunks: list[dict] | None = None,
+    tool_results: list[dict] | None = None,
     mode: Literal["policy", "workflow", "refusal"] = "policy",
 ) -> dict:
     """
@@ -153,6 +153,36 @@ def synthesize(
        "confidence": float}
     """
 ```
+
+**Corrected 2026-09-25 to match what the orchestrator actually passes.** Rob found
+both mismatches while implementing against this, which is the useful time to find
+them; the signature above is now the observed one, not the intended one.
+
+**`chunks` is `list[dict]`, not `list[Chunk]`, and the dicts are NOT uniform.**
+The orchestrator builds one `evidence` list from every tool that returns something
+citation-shaped, so entries arrive in two shapes side by side:
+
+| Source | Shape |
+|---|---|
+| `search_policy_documents` → `chunks` | `{doc_id, title, section, snippet, score}` — citation-ready |
+| `check_policy_compliance` → `policy_refs` | `{doc_id, section}` — no title, snippet or score |
+
+`synthesize()` must therefore treat every field except `doc_id` as optional and
+must never assume a `Chunk` instance. A sparse ref can be backfilled to a full
+citation with `retrieve.get_section(doc_id, section_id)` — a plain import inside
+`app/rag/`, no MCP round trip.
+
+**`tool_results` is `list[dict] | None`, not `dict | None`.** The orchestrator
+always passes a list, possibly empty, never a bare dict. Each entry is
+`{tool, ok, payload, error}`.
+
+**`chunks` and `tool_results` are different kinds of thing, and the split matters.**
+`chunks` is what may be *cited* — policy text, addressed by doc and section.
+`tool_results` is what makes the answer *specific to this person* — their balance,
+their profile, their blackout windows. In demo Task B the PTO sections arrive in
+`chunks` while Grace Lin's 1.5 days arrive in `tool_results`; the answer weaves
+both and cites only from the first. `lookup_employee_profile`, `check_pto_balance`
+and `lookup_benefits_status` never reach `chunks`.
 
 The orchestrator decides WHETHER to call this and WHAT evidence to pass.
 Rob decides HOW the answer is written and cited.

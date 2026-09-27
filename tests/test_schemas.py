@@ -167,3 +167,88 @@ async def test_a_genuinely_missing_section_still_errors(call):
     result = await call("get_policy_section", doc_id="REMOTE-WORK",
                         section_id="RW-999 Nonexistent Section")
     assert result["error"] == "section_not_found"
+
+
+# --------------------------------------- every emitted id must exist in the corpus
+
+@pytest.mark.parametrize(
+    "scenario",
+    ["work remotely from another state for six weeks",
+     "take three days of pto next week"],
+)
+async def test_compliance_policy_refs_point_at_real_documents(call, scenario):
+    """A citation naming a document that does not exist scores as a wrong citation.
+
+    check_policy_compliance's refs were hardcoded in the pre-Contract-D scheme
+    ("remote-work", "1.3") and were missed when the fixtures behind the other RAG
+    tools were converted to Eric's registry. Every ref this tool emits is now
+    resolved against the corpus.
+    """
+    result = await call("check_policy_compliance", scenario=scenario,
+                        employee_id="E1001")
+    refs = result.get("policy_refs", [])
+    assert refs, "scenario produced no policy_refs to check"
+
+    for ref in refs:
+        section = await call("get_policy_section", doc_id=ref["doc_id"],
+                             section_id=ref["section"])
+        assert "error" not in section, (
+            f"{ref['doc_id']}/{ref['section']} does not resolve: {section}")
+
+
+async def test_no_tool_emits_a_doc_id_outside_the_manifest(call):
+    """A sweep, so the next stale id is caught wherever it hides."""
+    import json
+    import pathlib
+
+    known = {d["doc_id"] for d in
+             json.load(open(pathlib.Path("corpus/manifest.json")))["documents"]}
+
+    emitted = set()
+    found = await call("search_policy_documents", query="remote work pto benefits", k=10)
+    emitted |= {c["doc_id"] for c in found.get("chunks", [])}
+    for scenario in ("remote work another state", "pto request", "expense claim"):
+        result = await call("check_policy_compliance", scenario=scenario,
+                            employee_id="E1001")
+        emitted |= {r["doc_id"] for r in result.get("policy_refs", [])}
+
+    assert emitted <= known, f"doc_ids not in the manifest: {sorted(emitted - known)}"
+
+
+# ----------------------------------- Contract C describes what actually arrives
+
+def test_contract_c_signature_matches_the_shipped_one():
+    """The contract was wrong about its own seam until 2026-09-25.
+
+    It typed chunks as list[Chunk] and tool_results as dict|None; the orchestrator
+    passes heterogeneous list[dict] and list[dict]. Rob found it implementing
+    against the document. This pins the document to the code so the next reader
+    is not misled the same way.
+    """
+    import inspect
+
+    from app.rag.answer import synthesize
+
+    params = inspect.signature(synthesize).parameters
+    assert set(params) == {"question", "chunks", "tool_results", "mode"}
+    # Both collections are optional lists, not a bare dict and not a Chunk list.
+    assert params["chunks"].default is None
+    assert params["tool_results"].default is None
+
+
+def test_synthesize_tolerates_a_sparse_policy_ref():
+    """check_policy_compliance contributes {doc_id, section} with no snippet.
+
+    Those land in the same evidence list as fully-shaped chunks. Assuming a title
+    or snippet is present would crash the synthesis node on any turn that used the
+    compliance tool.
+    """
+    from app.rag.answer import synthesize
+
+    out = synthesize(
+        question="Can I work from Colorado for six weeks?",
+        chunks=[{"doc_id": "REMOTE-WORK", "section": "RW-3"}],
+        tool_results=[],
+        mode="policy",
+    )
+    assert isinstance(out, dict) and "answer" in out
