@@ -32,6 +32,16 @@ from app.agent.trace import Trace
 
 MAX_TOOL_STEPS = 6
 
+#: Chunks retrieved on the RAG-only path.
+#:
+#: Tried 10 on 2026-09-26 to widen a single-shot search for multi-document
+#: questions, and it made the answers WORSE: MD-02 went from citing LEAVE and
+#: PTO-HOLIDAYS to citing PTO-HOLIDAYS alone. More evidence did not mean more
+#: citations, because the model writes the answer and then declares which
+#: passages it used -- a wider, noisier context made it lean on fewer. Reverted.
+#: If multi-document coverage needs improving, it is answer.py's prompt, not k.
+RAG_ONLY_K = 5
+
 Intent = Literal["policy_qa", "workflow", "clarify", "refuse"]
 
 CLASSIFY_SYSTEM = """You route HR questions for an internal assistant.
@@ -90,11 +100,18 @@ one policy - then CALL THE TOOL. Explaining how the user could do it themselves 
 not doing it. Researching an action request until the step budget runs out means
 they asked you to act and you never did.
 
-CHECK THE RECORD, NOT JUST THE POLICY. Questions about someone's eligibility,
-balances or elections are answered by their record: use check_pto_balance or
-lookup_benefits_status. The policy says what the rule is; the record says what is
-true for this person. Citing the rule without checking the record is how you tell
-a contractor "it depends" when the answer is a flat no.
+CHECK THE RECORD, NOT JUST THE POLICY. The policy says what the rule is; the
+record says what is true for this person, and only the record is authoritative
+about them.
+
+- benefits, plans, eligibility, enrolment -> lookup_benefits_status
+- time off, days remaining, blackout dates -> check_pto_balance
+
+`employment_type` from lookup_employee_profile is NOT a benefits answer. Reading
+"contractor" off a profile and applying the general rule skips the one source that
+would show an exception, and an exception is exactly the case worth getting right.
+Look up the profile to learn WHO is asking, then look up the record that governs
+WHAT they asked about. Both, not one.
 """
 
 
@@ -133,42 +150,53 @@ def _trace(state: AgentState, kind: str, **fields: Any) -> list[dict]:
 
 
 def _diverse_citations(evidence: list[dict], limit: int = 5) -> list[dict]:
-    """Best chunks by score, nudged to include a second document when one earns it.
+    """Best evidence first, admitting a second document only when it earns it.
 
-    Precision first. An earlier version round-robined across every document that
-    appeared in the evidence, which did widen a remote-work answer to cite the tax
-    policy -- and also made a PTO question cite REMOTE-WORK and TAX-LOCATION,
-    because "spread the citations" and "cite the right things" are not the same
-    goal. Citation accuracy scores the second one.
+    **Fallback only.** This runs when app/rag/answer.py is missing. Once Rob's
+    module is importable, synthesize() picks the citations itself -- the model
+    declares which passages it used in a META trailer and he cross-references
+    those against the evidence. Kept because the fallback still has to produce
+    something honest, but changing it does not change production behaviour, which
+    cost me two commits' worth of tuning on 2026-09-26 before I checked.
 
-    So: take the top `limit` by score. If they all came from one document, give up
-    the weakest slot to the best chunk from the next document, but only if that
-    chunk is within RELEVANCE_FLOOR of the best chunk overall. A genuinely
-    single-document question keeps citing one document.
+    Precision before spread. Round-robining across every document present made a
+    PTO question cite REMOTE-WORK, because "spread the citations" and "cite the
+    right things" are different goals and only the second is scored. A per-document
+    cap was tried instead and reintroduced the same failure from the other side.
+
+    **Ranking falls back to arrival order when scores are flat.** retrieve()
+    returns every chunk with score 0.0: RRF computes a score, orders by it, and
+    never writes it back. The ORDER is correct and the NUMBER is not, so sorting
+    by score alone degraded to whatever order sort happened to leave. Arrival
+    order IS the retrieval rank, because evidence is extended in return order.
     """
     RELEVANCE_FLOOR = 0.4
 
-    ranked = sorted(evidence, key=lambda c: c.get("score", 0), reverse=True)
-    if not ranked:
+    if not evidence:
         return []
+
+    scored = any(c.get("score", 0) for c in evidence)
+    ranked = (sorted(evidence, key=lambda c: c.get("score", 0), reverse=True)
+              if scored else list(evidence))
 
     picked = ranked[:limit]
     if len({c.get("doc_id") for c in picked}) > 1:
         return picked
 
-    best_score = ranked[0].get("score", 0) or 1
     incumbent = picked[0].get("doc_id")
-    runner_up = next(
-        (c for c in ranked
-         if c.get("doc_id") != incumbent
-         and c.get("score", 0) >= best_score * RELEVANCE_FLOOR),
-        None,
-    )
-    if runner_up is not None and len(picked) == limit:
-        picked = picked[: limit - 1] + [runner_up]
-    elif runner_up is not None:
-        picked = picked + [runner_up]
-    return picked
+    if scored:
+        best = ranked[0].get("score", 0) or 1
+        runner_up = next((c for c in ranked
+                          if c.get("doc_id") != incumbent
+                          and c.get("score", 0) >= best * RELEVANCE_FLOOR), None)
+    else:
+        window = ranked[: max(limit * 2, limit + 3)]
+        runner_up = next((c for c in window
+                          if c.get("doc_id") != incumbent), None)
+
+    if runner_up is None:
+        return picked
+    return (picked[: limit - 1] + [runner_up]) if len(picked) == limit else picked + [runner_up]
 
 
 def _synthesize(question: str, evidence: list[dict], tool_results: list[dict],
@@ -231,6 +259,19 @@ def build_graph(client: MCPClient, chat_model: Any):
         word = content.strip().lower().split()[:1]
         intent: Intent = word[0] if word and word[0] in (
             "policy_qa", "workflow", "clarify", "refuse") else "policy_qa"
+
+        # A workflow needs someone to run it for. "Am I eligible for parental
+        # leave?" asked by nobody in particular routes to workflow on the wording
+        # alone, and then there is no record to consult: the agent spends its step
+        # budget on lookups it cannot make and retrieves less policy than the
+        # RAG-only path would have. Measured -- three of Eric's policy items lost
+        # their expected citations exactly this way.
+        #
+        # Downgrading is better than clarifying here: the question is not
+        # ambiguous, it is answerable from policy for anyone. If the caller wants
+        # it personalised they supply an employee_id.
+        if intent == "workflow" and not state.get("employee_id"):
+            intent = "policy_qa"
         escalation = guardrails.classify_escalation(state["question"])
         trace = _trace(state, "intent", result_summary=intent, status="ok")
         if escalation:
@@ -249,9 +290,14 @@ def build_graph(client: MCPClient, chat_model: Any):
         }
 
     async def retrieve(state: AgentState) -> dict:
-        """RAG-only path: one retrieval, straight to synthesis."""
+        """RAG-only path: one retrieval, straight to synthesis.
+
+        This path gets ONE search and no second angle, while the workflow path can
+        search repeatedly from different framings. Widening k looked like the fix
+        for multi-document coverage and measurably was not -- see RAG_ONLY_K.
+        """
         call = await client.call("search_policy_documents",
-                                 query=state["question"], k=5)
+                                 query=state["question"], k=RAG_ONLY_K)
         chunks = call.payload.get("chunks", []) if call.ok else []
         return {
             "evidence": chunks,

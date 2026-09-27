@@ -279,3 +279,19 @@ def test_retrieve_chunks_have_policy_chunk_shape_only(built_index):
     result = retrieve("remote work", k=3)
     for chunk in result["chunks"]:
         assert set(chunk.keys()) == {"doc_id", "title", "section", "snippet", "score"}
+
+
+@pytest.mark.embedding
+def test_retrieve_hybrid_mode_reports_the_real_fused_score_not_zero(built_index):
+    # Regression: _rrf_fuse computed fused_scores and retrieve() sorted and
+    # capped by them, but never wrote the fused value back onto the chunk
+    # dict before _to_policy_chunk stripped it -- every hybrid-mode chunk
+    # reported score=0.0 regardless of its actual rank (found by Chris while
+    # tracing why answer.py's confidence heuristic, which averages the score
+    # of cited chunks, always returned 0). Every score here must be a real,
+    # positive RRF value, and they must already be in the order the chunks
+    # were returned in (retrieve() sorts by this score before capping).
+    result = retrieve("FMLA leave PTO accrual during leave", k=5)
+    scores = [c["score"] for c in result["chunks"]]
+    assert all(isinstance(s, float) and s > 0.0 for s in scores)
+    assert scores == sorted(scores, reverse=True)
