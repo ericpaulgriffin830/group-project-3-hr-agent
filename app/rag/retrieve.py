@@ -220,6 +220,19 @@ def retrieve(query: str, k: int = 5, doc_filter: list[str] | None = None,
                     "section": c.section, "snippet": c.snippet, "score": 0.0,
                 }
 
+        # Write the fused RRF score back onto each chunk dict so it is the
+        # number search_policy_documents actually reports, rather than
+        # whatever the vector leg's raw cosine score happened to leave (or
+        # the 0.0 placeholder set just above for a BM25-only backfill).
+        # fused_order/_cap_per_document already rank by fused_scores; this
+        # just makes the exposed "score" field agree with that ranking --
+        # without it every hybrid-mode chunk reports the wrong score, and
+        # answer.py's confidence heuristic (which averages cited chunks'
+        # scores) reads all zeros no matter how well-supported the answer is.
+        for cid, score in fused_scores.items():
+            if cid in by_id:
+                by_id[cid]["score"] = score
+
     capped_ids = _cap_per_document(fused_order, doc_id_of, k)
     chunks = [_to_policy_chunk(by_id[cid]) for cid in capped_ids if cid in by_id]
     return {"chunks": chunks, "retrieval_mode": "vector_only" if mode == "vector_only" else "hybrid"}

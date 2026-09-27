@@ -39,6 +39,20 @@ returned as a citation is not.
 `basis` and `confidence` are likewise computed here, not asked of the model.
 LLMs self-report confidence poorly, and `basis` only has four valid values -- both
 are more reliably derived from what evidence was actually available and used.
+
+**Multi-document citation gap (2026-09-27).** Three eval items were failing here
+before this note: FMLA-01 (score bug, see NEUTRAL_SCORE/`_confidence` history) and
+MD-01/MD-02, where retrieve() was already surfacing every expected document at
+k=5 but the model's answer -- and therefore its META cited_doc_ids -- only ever
+drew on one of them. Chris ruled out retrieval as the cause first: widening the
+RAG-only path from k=5 to k=10 made MD-02 worse, not better (it went from citing
+both LEAVE and PTO-HOLIDAYS to citing PTO-HOLIDAYS alone), which is the opposite
+of what a retrieval-side gap would predict and consistent with a wider, noisier
+context making the model lean on fewer passages rather than more. So the fix is
+here, in SYSTEM_POLICY/SYSTEM_WORKFLOW and TRAILER_INSTRUCTION: explicit
+instructions to read every passage shown and address each one that adds a
+distinct condition, exception, or step, rather than stopping at the first
+passage that looks sufficient. Nothing about k or the retriever changed.
 """
 
 from __future__ import annotations
@@ -76,6 +90,13 @@ Rules:
   sounding assumption about what a policy "probably" says.
 - If the passages support a general rule but not every detail asked about, answer
   what they DO support and say plainly what they do not cover.
+- Read EVERY passage before answering. Real questions often turn on how two or
+  more policies interact (a leave policy and a PTO policy, a remote-work policy
+  and a tax policy, an expense policy and an equipment policy). If more than one
+  passage bears on the question -- each adds a distinct condition, exception, or
+  required step -- your answer must address all of them, not just the first
+  passage that looks sufficient. Stopping at one relevant passage when another
+  qualifies or extends the answer is an incomplete answer, not a concise one.
 - Distinguish a stated policy fact ("PTO accrues at 1.5 days per month") from a
   recommendation you are making ("you may want to confirm timing with your
   manager") -- never present the second as if it were the first.
@@ -89,6 +110,9 @@ Rules:
 - Use the employee-specific data for facts about THEM (their balance, their
   location, their eligibility) -- never guess these from policy text alone.
 - Use the policy passages for the RULE that applies to them.
+- Read EVERY policy passage before answering. If more than one bears on the
+  question -- each adds a distinct condition, exception, or required step --
+  address all of them, not just the first one that looks sufficient.
 - If the employee-specific data needed to answer is missing, say so plainly
   rather than assuming a default case.
 - State only what the provided data and passages actually say. Never fill a gap
@@ -107,8 +131,10 @@ META:
 {"cited_doc_ids": [...], "unsupported_flags": [...]}
 
 - cited_doc_ids: the doc_id of every policy passage above that your answer
-  actually relied on. Omit any passage you did not use. Use doc_ids exactly as
-  given, e.g. "PTO-HOLIDAYS".
+  actually relied on. If your answer drew on more than one passage -- which is
+  common when policies interact -- list all of them; do not collapse to a
+  single doc_id when several genuinely contributed. Omit any passage you did
+  not use. Use doc_ids exactly as given, e.g. "PTO-HOLIDAYS".
 - unsupported_flags: short phrases for anything in your answer that goes beyond
   what the provided evidence and data literally state (for example, "assumes a
   standard approval timeline not stated in the retrieved text"). Use [] if
