@@ -107,8 +107,10 @@ anything.
 - [X] `evaluation/run_eval.py` — the scoring harness. First full run below.
 - [X] Policy-Q&A eval items → `evaluation/eval_set.eric.json` (13 items)
 - [ ] Eval items for retrieval quality → `evaluation/eval_set.rob.json`
-- [ ] `deployed.md`, and the deployed URL in `README.md` — blocked on Rob's
-  group-repo deploy URL
+- [ ] `deployed.md` — **written and committed by Chris with everything except the
+  three URLs**; cold-start behaviour, what-runs-where, the deploy gate and how to
+  reproduce both demo tasks are all in. Fill the `<…>` placeholders and delete the
+  header block once the group-repo services exist. Then the README link.
 
 ### Chris
 
