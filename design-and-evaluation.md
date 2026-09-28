@@ -1,8 +1,8 @@
 # Design and Evaluation
 
-> **Assembly note — delete before submission.** Rob's RAG section and Eric's
-> deployment section are still to come; Chris does the final edit into one voice.
-> Sections below marked *(Chris)* are complete. Architecture diagram:
+> **Assembly note — delete before submission.** Eric's deployment section is
+> still to come; Chris does the final edit into one voice. Sections marked
+> *(Chris)* or *(Rob)* below are complete. Architecture diagram:
 > [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ---
@@ -310,9 +310,172 @@ keeps both orders visible.
 
 ---
 
-## 7. RAG design *(Rob — to come)*
+## 7. RAG design *(Rob)*
 
-Chunking strategy, embedding model, retrieval k, vector store, hybrid + RRF.
+Chunking, embedding, vector store and retrieval are one pipeline
+(`app/rag/{chunk,embed,store,retrieve}.py`), and every non-obvious choice below was
+made because a simpler alternative was tried first and produced a specific,
+reproducible failure.
+
+### Chunking: one section = one chunk, always
+
+The corpus's 12 documents split into 106 heading-delimited sections
+(`chunk.py`), and as of 2026-09-24 **every section becomes exactly one chunk**,
+however long — a section is never split into sub-chunks. That is a change from
+the original design, which packed long sections into multiple ~600-token
+sub-chunks to keep chunk size predictable.
+
+The failure case that reversed it: a query matches only the first half of a
+two-chunk section. The second chunk — the one carrying the sentence that
+actually answers the question — never surfaces in the top-k, and
+`get_policy_section` is never called to pull in the rest, because nothing in
+the retrieved evidence pointed the agent at that section id in the first
+place. Splitting trades a real failure mode (the relevant sentence is
+unreachable) for a hypothetical benefit (a tighter per-chunk token budget) that
+nothing in the eval set rewards. One chunk per section means whatever chunk a
+query hits already contains everything `get_policy_section` would have added,
+with no second call required — and it incidentally simplifies retrieval, since
+there are no longer sibling sub-chunks that could out-rank each other for the
+same section.
+
+It also matters for *why* a chunk never crosses a section boundary at all, not
+just why it doesn't split within one: the corpus's cross-references ("see
+PTO-8", "per TAX-5") are prose anchored to whole sections, and a chunk boundary
+placed mid-section risks separating a reference from what it refers to.
+
+**Known trade-off, accepted rather than solved.** fastembed's own model
+registry documents `BAAI/bge-small-en-v1.5` as truncating input at 512 tokens.
+The longest section in the current corpus is 460 tokens by `chunk.py`'s own
+approximate word-level counter — under the limit, but not by a wide margin, and
+a real subword tokenizer typically produces *more* tokens for the same text
+than a word-level count does, not fewer. A future section longer than the real
+truncation point would have its tail silently dropped from the embedding
+(though not from `text`/`snippet`, and not from what `get_policy_section`
+returns — only the vector representation would be incomplete).
+`token_count` is recorded on every chunk specifically so this is checkable,
+but nothing currently enforces a limit or warns at build time. Worth watching
+if the corpus grows.
+
+(Token counts themselves use a small offline regex approximation, not a real
+tokenizer: `tiktoken` was tried and dropped because its `cl100k_base` encoding
+is not vendored in the package — `get_encoding()` fetches a ~1.7 MB file from
+`openaipublic.blob.core.windows.net` on first use with no local fallback, a
+runtime network dependency this project should not carry just to size and
+record chunk length, particularly against the free-tier memory constraints
+[`docs/DEPLOYMENT-NOTES.md`](docs/DEPLOYMENT-NOTES.md) already treats as real
+rather than hypothetical.)
+
+### Embedding model: fastembed, not sentence-transformers
+
+`BAAI/bge-small-en-v1.5` (384-dim) is the pinned model either way — the swap
+that mattered was the *library*. `sentence-transformers` pulls `torch`, and on
+Linux that pulls the full CUDA stack even though Render's free tier has no GPU
+to use it: measured at **3.46 GB** of Linux install, 3.30 GB of it CUDA/torch
+machinery that is never exercised. `fastembed` gets the same model onto disk
+in **113 MB** — roughly 31× smaller — with zero torch/CUDA packages. Against a
+512 MB Render instance shared with FastAPI and Chroma, this was reclassified
+from a cleanup item to a deployment blocker (full numbers in
+[`docs/DEPLOYMENT-NOTES.md`](docs/DEPLOYMENT-NOTES.md)).
+
+**The asymmetric-embedding assumption turned out to be wrong, and the code was
+kept anyway.** BGE models are generally trained with an asymmetric convention:
+a passage is embedded as-is, a query gets an added retrieval instruction, and
+mixing them up silently degrades ranking. `embed.py` was written around that
+assumption — separate `embed_documents()` / `embed_query()` functions — before
+it was checked against this specific model. It doesn't hold here:
+fastembed 0.8.1's own model registry describes the instruction prefix as "not
+so necessary" for `bge-small-en-v1.5` (versus "necessary" for the older
+`bge-small-en`), and reading fastembed's source confirms `query_embed()` for
+this model is a direct call to `embed()` — no prefix added. A test
+(`test_query_and_document_embeddings_of_same_text_are_currently_identical`)
+pins this down empirically rather than trusting the docs. The two functions
+stayed separate anyway: a query embedded the wrong way on a model where the
+asymmetry *is* real degrades with no error to catch it, which is exactly the
+failure a future model swap could reintroduce. As long as `bge-small-en-v1.5`
+is pinned, the split is insurance against a change that hasn't happened, not a
+fix for a bug that currently exists.
+
+### Vector store: Chroma, local and disposable
+
+A small on-disk Chroma collection (`CHROMA_PATH`), rebuilt from the corpus by
+`scripts/build_index.py` — never a paid hosted vector database. The rubric
+explicitly allows "a small local vector store built during deployment," and at
+106 chunks a persistent managed service would be solving a problem this corpus
+does not have. Embeddings are computed once in `embed.py` and passed to Chroma
+explicitly rather than letting Chroma call its own default embedding function,
+so there is exactly one embedding call site in the project — code that
+bypassed `embed.py` could otherwise reintroduce the document/query mix-up
+above without anything catching it.
+
+Known, unaddressed limitation: Chroma's HNSW index assigns each vector's graph
+level with an internal random draw, so a rebuilt index can order exact score
+ties differently across runs even though the embeddings themselves are
+deterministic. This affects tie-breaking only, never which documents are
+retrieved, and nothing currently guards against it.
+
+### Retrieval: hybrid BM25 + vector, fused with weighted RRF
+
+**Hybrid, not vector-only**, because the fixture-phase keyword ranker's real
+traces (`docs/DEMO-TASKS.md`) showed two concrete vocabulary-mismatch
+failures: connecting "another state" with "nexus" took 5 reformulated
+searches, and "insufficient balance" took 4 near-duplicate rephrasings.
+Vector search closes that gap. BM25 stays alongside it because an exact term
+match — a section id typed verbatim, "FMLA", a specific policy number — is
+something a dense embedding can under-rank relative to lexical search.
+
+**Fused by rank (RRF), not by raw score**, because BM25 scores and cosine
+similarities live on incomparable scales with no principled way to add them
+directly. But *unweighted* RRF (equal trust in both legs) produced its own
+measured failure: for "Can I work from Colorado for six weeks?", BM25 ranked
+`LEAVE-3` (Parental Leave) ahead of `REMOTE-WORK`'s actually-relevant
+sections, purely because "work" and "weeks" are generic tokens `LEAVE-3`
+happens to repeat often ("12 weeks," "6 weeks," "2-week blocks"). The vector
+leg correctly ranked `REMOTE-WORK`'s `RW-3` at position 2; equal-weight RRF
+still let BM25's noise drag `LEAVE-3` above it. Weighting the fusion
+**0.8 vector / 0.2 BM25** fixed this case and was checked against a keyword-heavy
+control ("nexus tax registration"), which still correctly favors the
+exact-term BM25 match at that weighting — the reduction in BM25's influence is
+not vector-only in disguise.
+
+**A per-document cap (`MAX_CHUNKS_PER_DOC = 2`)** keeps one document's many
+sections from filling every result slot on a multi-document question.
+Without it, `REMOTE-WORK`'s nine sections — all containing "work" and
+"remote" — can fill every slot before the tax or infosec policy ever gets a
+chance, which is fatal to the rubric's required multi-document question.
+
+**Retrieval `k` stayed at 5** despite multi-document coverage looking, at
+first glance, like a `k` problem. Widening the RAG-only path's search from
+k=5 to k=10 was tried specifically to give a single-shot search more room to
+span three documents, and it made the target case *worse*, not better: a
+question needing both `LEAVE` and `PTO-HOLIDAYS` went from citing both to
+citing `PTO-HOLIDAYS` alone. More retrieved evidence did not produce more
+citations, because a wider, noisier context made the model that writes the
+final answer lean on fewer of the passages it was shown, not more. That
+result is the reason multi-document coverage was fixed in the synthesis
+prompt (`answer.py`'s `SYSTEM_POLICY`/`SYSTEM_WORKFLOW`, instructing the model
+to address every passage that bears on the question) rather than by retuning
+`k` — the retriever was already surfacing the right documents; the prompt
+was the part not using them.
+
+**A minimum-relevance floor (`MIN_VECTOR_RELEVANCE = 0.6`) was added late**,
+after the orchestrator's own "no evidence, no guess" refusal guard turned out
+to be unreachable. The vector leg has no floor of its own — it always returns
+its `k` nearest neighbors, however weak the actual match — unlike the
+fixture-phase ranker it replaced, which dropped any chunk scoring zero on
+keyword overlap. A genuinely off-topic query therefore stopped coming back
+empty once real retrieval replaced the fixture, and the refusal guard could
+never fire on the RAG-only path. The floor's value comes from measured
+separation, not a round number: every real question across both eval sets
+scores ≥ 0.67 on the vector leg alone (including the hardest multi-document
+items), while nonsense strings top out around 0.56. A query is only refused
+when it clears *neither* leg — vector score below the floor *and* zero BM25
+hits — because a short, single-real-word query ("dental," "tax") can score as
+low on the vector leg as genuine nonsense, but a real corpus word always
+gives BM25 a positive keyword match to rescue it on. This is not airtight: a
+globally common word missing from the stopword list can occasionally earn a
+real BM25 score off one incidental match in a corpus this small (106
+chunks), so not every off-topic query is caught. Narrowing that further needs
+its own tuning pass against the corpus, not a quick constant change.
 
 ## 8. Deployment *(Eric — to come)*
 
