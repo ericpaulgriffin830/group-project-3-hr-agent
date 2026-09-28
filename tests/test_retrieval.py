@@ -273,6 +273,31 @@ def test_retrieve_empty_query_returns_no_chunks(built_index):
 
 
 @pytest.mark.embedding
+def test_retrieve_off_topic_query_returns_no_chunks(built_index):
+    # Regression: retrieve() replaced the fixture-phase keyword ranker, which
+    # dropped every zero-score chunk and so came back empty for a query with no
+    # real vocabulary overlap. The vector leg has no floor of its own -- it
+    # always returns its k nearest neighbors, however weak the match -- so a
+    # genuinely off-topic query stopped coming back empty, and the
+    # orchestrator's "no evidence -> refuse rather than guess" guard
+    # (app/agent/orchestrator.py) could never fire on the RAG-only path. See
+    # MIN_VECTOR_RELEVANCE's docstring for the measured score separation this
+    # floor is based on.
+    assert retrieve("unanswerable", k=5)["chunks"] == []
+    assert retrieve("asdf jkl qwerty zzzz", k=5)["chunks"] == []
+
+
+@pytest.mark.embedding
+def test_retrieve_single_real_word_query_is_rescued_by_a_bm25_hit(built_index):
+    # A short, single-word real query can score as low on the vector leg as
+    # genuine nonsense does -- MIN_VECTOR_RELEVANCE alone would wrongly gate it
+    # out. A real corpus word always gives BM25 a positive keyword match, which
+    # is exactly the rescue the "and not bm25_ids" half of the gate exists for.
+    for query in ("dental", "tax", "vacation"):
+        assert len(retrieve(query, k=5)["chunks"]) > 0, query
+
+
+@pytest.mark.embedding
 def test_retrieve_chunks_have_policy_chunk_shape_only(built_index):
     # chunk_id is an internal fusion key (store.py, retrieve.py's
     # _to_policy_chunk) and must never leak into the tool-facing response.

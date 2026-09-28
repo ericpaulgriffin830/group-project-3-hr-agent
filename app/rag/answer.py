@@ -244,33 +244,47 @@ def _clean_answer(text: str) -> str:
     return text.strip()
 
 
-def _parse_completion(raw: str, fallback_ids: list[str]) -> tuple[str, list[str], list[str]]:
-    """Split the model's raw text into (answer, cited_doc_ids, extra_flags).
+def _parse_completion(raw: str, fallback_ids: list[str]) -> tuple[str, list[str], list[str], bool]:
+    """Split the model's raw text into (answer, cited_doc_ids, extra_flags, trailer_ok).
 
     Falls back to citing every doc_id that was actually shown to the model
     (`fallback_ids`) whenever the trailer is missing or malformed, rather than
     citing nothing -- a caller still gets grounded citations, just not a
     model-narrowed set, and the fallback itself is recorded as an
     unsupported_flag so it is visible, not silent.
+
+    `trailer_ok` is the caller's signal for whether `cited_doc_ids` is a genuine
+    answer from the model (True, even when that answer is a validly empty list --
+    "I relied on none of these") versus a value THIS function had to invent
+    because the trailer could not be read at all (False, in every branch below
+    that falls back to `fallback_ids`). The two look identical by the time they
+    reach the caller as a plain list -- an empty `cited` and a `cited` we
+    replaced with `fallback_ids` for a different reason are not the same claim --
+    so the distinction has to travel separately, or a model that correctly found
+    nothing relevant looks the same as one whose trailer synthesize() gave up on
+    parsing, and the caller cannot tell "nothing applies" from "we don't know
+    what applies" without it.
     """
     match = _META_RE.search(raw.strip())
     if not match:
         return (_clean_answer(raw), fallback_ids,
-                ["model did not emit the expected META block; citing all provided evidence"])
+                ["model did not emit the expected META block; citing all provided evidence"],
+                False)
 
     answer_text = _clean_answer(raw[:match.start()])
     try:
         meta = json.loads(match.group(1))
     except json.JSONDecodeError:
         return (answer_text, fallback_ids,
-                ["META block was not valid JSON; citing all provided evidence"])
+                ["META block was not valid JSON; citing all provided evidence"], False)
 
     cited = meta.get("cited_doc_ids")
     flags = [f for f in (meta.get("unsupported_flags") or []) if isinstance(f, str)]
     if not isinstance(cited, list) or not all(isinstance(x, str) for x in cited):
         cited = fallback_ids
         flags.append("cited_doc_ids missing or malformed; citing all provided evidence")
-    return answer_text, cited, flags
+        return answer_text, cited, flags, False
+    return answer_text, cited, flags, True
 
 
 # --------------------------------------------------------- basis / confidence
@@ -407,11 +421,23 @@ def synthesize(question: str, chunks: list[dict] | None = None,
         return _llm_unavailable_fallback(prompt_chunks, ok_tool_results,
                                          unsupported_flags, mode)
 
-    answer_text, cited_ids, model_flags = _parse_completion(raw, list(by_doc_id))
+    answer_text, cited_ids, model_flags, trailer_ok = _parse_completion(raw, list(by_doc_id))
     unsupported_flags.extend(model_flags)
 
     resolved = [by_doc_id[d] for d in cited_ids if d in by_doc_id]
-    if not resolved and prompt_chunks:
+    # An explicit, cleanly parsed, EMPTY cited_doc_ids (trailer_ok and no cited_ids
+    # at all) is the model saying "none of the evidence applied" -- a real answer,
+    # not a parsing gap. That must be allowed to fall through to basis="refused"
+    # below, not be converted into a "policy_rag" answer backed by evidence the
+    # model never actually relied on. Every other empty-`resolved` case still
+    # recovers by showing top evidence: a missing/malformed META block
+    # (trailer_ok is False) tells us nothing about what the model used, and a
+    # non-empty cited_doc_ids that named only ids that don't resolve (trailer_ok
+    # is True but cited_ids is non-empty) is the model claiming a citation that
+    # doesn't check out, not declining to cite -- treated the same as "we don't
+    # know what applies", not as "nothing applies".
+    declined_explicitly = trailer_ok and not cited_ids
+    if not resolved and prompt_chunks and not declined_explicitly:
         resolved = prompt_chunks[:3]
         unsupported_flags.append(
             "model did not name a resolvable citation; showing top evidence instead")
