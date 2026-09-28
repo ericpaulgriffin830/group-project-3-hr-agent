@@ -107,8 +107,10 @@ anything.
 - [X] `evaluation/run_eval.py` — the scoring harness. First full run below.
 - [X] Policy-Q&A eval items → `evaluation/eval_set.eric.json` (13 items)
 - [ ] Eval items for retrieval quality → `evaluation/eval_set.rob.json`
-- [ ] `deployed.md`, and the deployed URL in `README.md` — blocked on Rob's
-  group-repo deploy URL
+- [ ] `deployed.md` — **written and committed by Chris with everything except the
+  three URLs**; cold-start behaviour, what-runs-where, the deploy gate and how to
+  reproduce both demo tasks are all in. Fill the `<…>` placeholders and delete the
+  header block once the group-repo services exist. Then the README link.
 
 ### Chris
 
@@ -116,10 +118,19 @@ anything.
 - [X] 14 eval items + `evaluation/README.md` (the item format)
 - [X] `docs/DEMO-TASKS.md` — both tasks with their MCP call sequences
 - [X] Rob's retrieval wired into the MCP tools
-- [ ] Architecture diagram — all 7 components
-- [ ] `design-and-evaluation.md`: agent orchestration, MCP design, transport, tool
-  schemas, safety guardrails
-- [ ] Final edit of `design-and-evaluation.md` into one voice
+- [X] Architecture diagram — all 7 components, `docs/ARCHITECTURE.md`. Mermaid, so
+  it renders on GitHub and cannot drift from the code the way an exported image
+  does. Includes a sequence diagram of one turn and the deployment topology.
+- [X] `design-and-evaluation.md` sections 2-6: agent orchestration, MCP design,
+  tool schemas and contract discipline, safety guardrails, determinism. Merged
+  in PR #6.
+- [X] `ai-tooling.md` created with my paragraph; Rob and Eric add theirs.
+- [ ] Final edit of `design-and-evaluation.md` into one voice — **blocked on
+  section 7 (Rob, RAG design) and section 8 (Eric, deployment)**, which are still
+  stubs in the file.
+- [X] Demo script with per-person timings — `docs/DEMO-SCRIPT.md`. 8:30 inside the
+  7-10 minute window, roughly even split, with the pre-record checklist and what to
+  say if something breaks on camera.
 
 ### Everyone
 
@@ -128,7 +139,9 @@ anything.
   `_RotatingChat`'s fallback list is empty, so a 429 just eats OpenAI's own retry
   backoff with nowhere to go — worth remembering if anyone's `.env` reverts to one
   key.
-- [ ] Your paragraph in `ai-tooling.md` (nobody owns creating the file — Chris will)
+- [ ] Your paragraph in `ai-tooling.md` — **the file now exists** with Chris's
+  section written and yours stubbed. One honest paragraph each: what tool, what
+  worked, what did not. The brief asks specifically for what did *not* work.
 - [ ] `quantic-grader` accepted on your own mirror. Chris's is accepted; check yours
 - [ ] Government ID in hand for 10/1 — the brief requires all three on camera with it
 
