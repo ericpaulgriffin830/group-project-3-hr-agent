@@ -169,6 +169,7 @@ class EmployeeProfileOut(Strict):
     name: str
     role: str
     employment_type: EmploymentType
+    department: str
     location: str
     # None at the top of the org. A VP with no manager is the honest model; the
     # alternative is a circular reporting line invented to satisfy a type.
