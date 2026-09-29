@@ -44,8 +44,8 @@ out: {"doc_id": str, "title": str, "section": str, "text": str}
 ```json
 in : {"employee_id": str}
 out: {"employee_id": str, "name": str, "role": str, "employment_type": str,
-      "location": str, "manager_id": str, "manager_name": str, "hire_date": str,
-      "tenure_months": int}
+      "department": str, "location": str, "manager_id": str,
+      "manager_name": str, "hire_date": str, "tenure_months": int}
 err: {"error": "employee_not_found", "employee_id": str}
 ```
 

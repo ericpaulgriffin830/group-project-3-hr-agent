@@ -98,6 +98,15 @@ def _employees() -> dict:
             "name": row["full_name"],
             "role": row["job_title"],
             "employment_type": row["employment_type"],
+            # Blackout periods are scoped by department before they are returned
+            # (see _blackouts_for), so the department was already deciding the
+            # answer -- it just was not on the profile, which left the agent with
+            # a department-scoped blackout and no way to tell whether it applied.
+            # It hedged, correctly and unhelpfully: "because the employee data
+            # does not indicate Grace's department, we cannot determine whether
+            # the Consulting Delivery blackout applies to her." It does apply;
+            # that is why it was in the list at all.
+            "department": row["department"],
             "location": _location(row),
             "manager_id": row.get("manager_id"),
             "manager_name": manager["full_name"] if manager else None,

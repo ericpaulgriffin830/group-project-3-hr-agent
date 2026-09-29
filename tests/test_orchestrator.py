@@ -386,6 +386,36 @@ async def test_workflow_with_an_employee_id_is_left_alone():
     assert out["trace"][0]["result_summary"] == "workflow"
 
 
+async def test_the_agent_is_told_who_is_asking():
+    """Contract B's `employee_id` field has to reach the model, not just the guardrails.
+
+    It reached `gate_action` and the classifier and stopped there: the agent's user
+    message was the raw question, so a workflow turn asked the model to look up an
+    employee while AGENT_SYSTEM told it "never invent an employee id". It did the
+    only correct thing left -- asked for the id in prose, called no tools -- and the
+    turn ended in "I could not find anything in company policy that covers that."
+
+    Every evaluation item and both demo buttons also spell the id into the question
+    text ("... I am E1007."), which is the one phrasing under which this passes. The
+    UI's own "Employee ID (optional)" box does not, so the deployed app refused both
+    demo tasks for anyone who used it. Hence a question here that does NOT name the
+    id: that is the whole point of the test.
+    """
+    chat = FakeChat([FakeMessage("workflow"), FakeMessage("done")])
+    async with connected() as client:
+        await answer("Can I work from Colorado for six weeks?", client=client,
+                     chat_model=chat, employee_id="E1007")
+
+    # calls[0] is classify, calls[1] is the agent node.
+    assert len(chat.calls) >= 2, "the agent node never ran"
+    agent_user_turn = chat.calls[1][-1]["content"]
+    assert "E1007" in agent_user_turn, (
+        f"the agent cannot call an employee-scoped tool without the id: "
+        f"{agent_user_turn!r}")
+    # The question itself must survive the annotation.
+    assert "Colorado" in agent_user_turn
+
+
 def test_citations_fall_back_to_arrival_order_when_scores_are_flat():
     """retrieve() returns every chunk with score 0.0 today.
 

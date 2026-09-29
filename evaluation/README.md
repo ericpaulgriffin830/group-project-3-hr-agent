@@ -20,6 +20,55 @@ out-of-scope requests, each with a correct or gold answer.
 Separate files on purpose: three people editing one JSON array is a merge conflict
 every time. The harness globs `eval_set.*.json`.
 
+## The three harnesses
+
+| Script | Question it answers | LLM? |
+|---|---|---|
+| `verify_expectations.py` | "Does every item's `expected` block still hold, right now?" One bit per item — a pre-commit gate. | yes |
+| `run_eval.py` | "What are our accuracy numbers, by check and by category, and how fast is it?" The numbers section 9 reports. | yes |
+| `ablation.py` | "Does retrieval configuration matter — k ∈ {3,5,8}, hybrid vs vector-only?" | **no** |
+
+`run_eval.py` runs two ways, and the brief wants both:
+
+```bash
+# Agent latency and accuracy, in-process. No network, no Render, no cold start.
+uv run python evaluation/run_eval.py
+
+# What a grader actually experiences. Cold start, first-request cost and warm
+# p50/p95, measured separately. Serial by default -- see below.
+uv run python evaluation/run_eval.py --api-base-url https://hr-agent-api-s2ux.onrender.com
+```
+
+Three things about the HTTP mode that are easy to get wrong:
+
+**It runs at concurrency 1 by default.** The free instance is 0.1 CPU and 512 MB.
+Six concurrent requests queue behind each other and the p95 then measures our own
+contention, not the service. Raising `--concurrency` is fine for scoring accuracy
+faster; the report flags the latency numbers as contended when you do.
+
+**Waking the instance and serving the first question are two different costs.**
+`GET /health` reports `index_ready` from the Chroma collection's count, which does
+not force the embedding model into memory — the first retrieval does. Measured
+2026-09-29 from overnight idle: health came back in 71.5s, and the first `/chat`
+took a further 68s while later ones ran in 4–15s. The harness times both, and
+excludes both from the warm percentiles.
+
+**It writes to `results.deployed.json`**, not `results.json`, so a deployed run
+can't silently overwrite the in-process one.
+
+`ablation.py` deliberately never calls the model: one variable changes per cell, and
+every cell is reproducible on a laptop with no API key and no cost against the
+shared 200k-token daily budget. It **refuses to run against an empty Chroma
+collection** — `retrieve()` reports `retrieval_mode: "hybrid"` even when the vector
+leg returned nothing, which is how a BM25-only run was nearly published as a
+hybrid-vs-vector result.
+
+> `run_eval.py` is Eric's. The HTTP mode and latency split were added rather than
+> forked into a fourth script, for the reason already in its docstring: the
+> concurrency and throttled-retry knobs were measured against Groq's real limits,
+> and a second harness rediscovering them by trial and error would waste the
+> shared budget for nothing.
+
 ## One item
 
 ```json

@@ -180,6 +180,34 @@ def test_a_department_blackout_only_binds_that_department():
     assert dept_blackouts[0]["blackout_id"] not in ids_for(outside[0])
 
 
+def test_the_profile_names_the_department_the_blackouts_were_scoped_by():
+    """The scoping field has to be visible on the profile, or the agent hedges.
+
+    `_blackouts_for` had already used `department` to decide the list before it was
+    returned -- so a department-scoped blackout in the payload means it applies.
+    The profile did not carry `department`, and the agent could not know that, so
+    on Task B it produced: "because the employee data does not indicate Grace's
+    department, we cannot determine whether the Consulting Delivery blackout
+    applies to her." It does apply; that is the only reason it was in the list.
+
+    The demo script and deployed.md both promise Task B refuses on TWO independent
+    grounds -- the 1.5-day balance and the blackout. Without this field the second
+    one arrives as a maybe.
+
+    Pinning equality, not just presence: two fields that are supposed to be the
+    same department are worth nothing if they can drift apart.
+    """
+    for eid, dept in fixtures._DEPARTMENT.items():
+        assert fixtures.EMPLOYEES[eid]["department"] == dept
+
+    grace = fixtures.EMPLOYEES["E1008"]
+    assert grace["department"] == "Consulting Delivery"
+    applicable = [b for b in fixtures._blackouts_for("E1008")
+                  if b["scope"] == "department"]
+    assert applicable, "Task B's second reason has gone missing"
+    assert all(b["department"] == grace["department"] for b in applicable)
+
+
 def test_company_wide_blackouts_bind_everyone():
     company = [b for b in fixtures.BLACKOUTS if b["scope"] == "company_wide"]
     assert company
