@@ -237,6 +237,19 @@ def build_graph(client: MCPClient, chat_model: Any):
     async def classify(state: AgentState) -> dict:
         # The caller's own id is a strong signal: a question asked *by* a known
         # employee is nearly always about that employee's situation.
+        #
+        # This annotated form is also what the agent node gets to see. Contract B
+        # takes `employee_id` as its own field, and it used to reach the guardrails
+        # and the classifier but never the agent's messages -- so the model was
+        # asked to run an employee-scoped workflow while being told "never invent an
+        # employee id", and it correctly did the only thing left: asked the user for
+        # the id in prose, called no tools, and the turn ended in "I could not find
+        # anything in company policy that covers that."
+        #
+        # It went unnoticed because every evaluation item and both demo buttons
+        # ALSO write the id into the question text ("... I am E1007."), which is the
+        # one phrasing that hides the bug. The UI's own "Employee ID (optional)"
+        # box does not, and neither does any caller reading CONTRACTS.md.
         question = state["question"]
         if state.get("employee_id"):
             question = f"[asked by employee {state['employee_id']}] {question}"
@@ -285,7 +298,7 @@ def build_graph(client: MCPClient, chat_model: Any):
             "escalation": escalation.as_dict() if escalation else None,
             "steps": 0,
             "messages": [{"role": "system", "content": AGENT_SYSTEM},
-                         {"role": "user", "content": state["question"]}],
+                         {"role": "user", "content": question}],
             "trace": trace,
         }
 

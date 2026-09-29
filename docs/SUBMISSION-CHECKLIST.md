@@ -10,12 +10,16 @@ the one above.
 
 ## Blocking — nothing else matters until these are true
 
-- [ ] **Group-repo Render services exist and both respond.** Not a personal
-      mirror. The graded URL has to come from the repo that gets submitted.
-- [ ] **`RENDER_DEPLOY_HOOK_API` and `RENDER_DEPLOY_HOOK_UI` in the group repo's
-      Actions secrets.** Until they exist, every push to `main` shows a red CI
-      badge even though the tests pass.
-- [ ] **`main` is green.**
+- [x] **Group-repo Render services exist and both respond** (Rob, 2026-09-28).
+      Verified 09-29 from cold: UI 200 in 42s, `GET /health` 200 in 81s returning
+      `mcp_connected: true, tools_discovered: 8, index_ready: true`. URLs are in
+      `README.md` and `deployed.md`.
+- [x] **`RENDER_DEPLOY_HOOK_API` and `RENDER_DEPLOY_HOOK_UI` in the group repo's
+      Actions secrets** (Rob, 2026-09-28). Confirmed live rather than assumed: the
+      deploy job's two `curl`s each returned a real Render deploy id
+      (`dep-dassk33bc2fs73a6au80`, `dep-dassk33bc2fs73a6av8g`). A missing secret
+      posts to an empty string and fails; these did not.
+- [x] **`main` is green.** 345 tests on Windows, macOS and Linux.
 - [ ] **`quantic-grader` is an ACCEPTED collaborator on all three repos** — not a
       pending invite. Invites expire after 7 days, and a pending one reads to a
       grader as no submission.
@@ -26,7 +30,10 @@ the one above.
           --jq '[.[].login]|join(", ")' 2>/dev/null || echo "NO REPO"
       done
       ```
-      Chris ✅ accepted · Rob ❌ no grader on the group repo · Eric ❌ no mirror repo
+      Re-checked 2026-09-29: Chris ✅ accepted · Rob ❌ no grader on the group repo
+      (collaborators are the three of us only) · Eric ❌ no mirror repo yet.
+      **The group repo is the one that gets submitted, so Rob's is the blocking
+      one.**
 
 ---
 
@@ -63,6 +70,10 @@ submission. `ai-tooling.md` needs Rob's and Eric's paragraphs.
       brief asks for this specifically
 - [ ] At least one ablation (k ∈ {3,5,8}, chunk size, or hybrid vs vector-only)
 - [ ] Results tables land in `design-and-evaluation.md` section 9
+
+**Run the eval against the deployed app, not localhost** — the URLs are in
+`deployed.md`. Warm both services first, or the first few items absorb the
+cold start and the p50 is meaningless.
 
 **Watch for:** a throttled run reports plausible wrong answers rather than errors.
 `verify_expectations.py` warns when this happens. If the warning fires, re-run at

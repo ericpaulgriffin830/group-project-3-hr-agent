@@ -4,6 +4,20 @@ Group project: a Retrieval-Augmented Generation (RAG) app for Human Resources co
 
 **Stack:** Python 3.12 · [uv](https://docs.astral.sh/uv/) · LangChain / LangGraph · ChromaDB · sentence-transformers
 
+## Live application
+
+| | |
+|---|---|
+| **Application (UI)** | https://hr-agent-ui.onrender.com |
+| **API** | https://hr-agent-api-s2ux.onrender.com |
+| **Health** | https://hr-agent-api-s2ux.onrender.com/health |
+
+Both run on Render's free instance type, which **spins down after 15 minutes idle
+and takes up to ~90 seconds to wake**. If the UI's status dot reads red, the API is
+asleep, not broken — send one throwaway question, wait for it to return, then use
+the app normally. Full deployment detail, measured cold-start numbers and the
+free-tier limits are in [`deployed.md`](deployed.md).
+
 ## Setup
 
 ### 1. Install uv
