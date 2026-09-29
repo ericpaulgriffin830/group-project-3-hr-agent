@@ -155,11 +155,10 @@ def _vector_leg_unavailable():
 
 def run(pattern: str, include_degraded: bool = True) -> dict:
     items = _items(pattern)
-    # Warm the process caches (BM25 index, embeddings, Chroma handle) before
-    # timing anything, or the first cell carries the whole cold-start cost and
-    # k=3/hybrid looks like the slowest configuration when it is the fastest.
-    retrieve("warm the caches", k=3)
 
+    # Check the index BEFORE warming. Warming embeds a query, which on a cold
+    # machine downloads the fastembed model -- there is no reason to pay that to
+    # find out the run cannot produce a valid result anyway.
     from app.rag import store
     indexed = store.count()
     if indexed == 0:
@@ -170,6 +169,11 @@ def run(pattern: str, include_degraded: bool = True) -> dict:
             "(retrieve() still reports retrieval_mode='hybrid' in that state, "
             "which is how this was nearly published as a real result.)"
         )
+
+    # Warm the process caches (BM25 index, embeddings, Chroma handle) before
+    # timing anything, or the first cell carries the whole cold-start cost and
+    # k=3/hybrid looks like the slowest configuration when it is the fastest.
+    retrieve("warm the caches", k=3)
 
     cells = [_cell(items, k, mode) for mode in MODES for k in K_VALUES]
 
