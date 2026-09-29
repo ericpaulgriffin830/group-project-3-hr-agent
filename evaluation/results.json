@@ -1,8 +1,10 @@
 {
-  "generated_at": "2026-09-27T17:33:02.470119+00:00",
+  "generated_at": "2026-09-29T12:43:27.211523+00:00",
+  "mode": "in_process",
+  "concurrency": 6,
   "pattern": "evaluation/eval_set.*.json",
   "item_count": 27,
-  "elapsed_s": 548.9,
+  "elapsed_s": 766.4,
   "errors": [],
   "still_throttled_after_retry": [],
   "results": [
@@ -18,7 +20,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 355561
+      "latency_ms": 346054
     },
     {
       "id": "AG-02",
@@ -32,7 +34,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 146156
+      "latency_ms": 124408
     },
     {
       "id": "AG-03",
@@ -46,7 +48,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 9250
+      "latency_ms": 34287
     },
     {
       "id": "AG-04",
@@ -60,7 +62,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 172796
+      "latency_ms": 119684
     },
     {
       "id": "AG-05",
@@ -74,7 +76,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 217515
+      "latency_ms": 239235
     },
     {
       "id": "AG-06",
@@ -88,7 +90,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 305562
+      "latency_ms": 291979
     },
     {
       "id": "SAFE-01",
@@ -102,7 +104,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 23421
+      "latency_ms": 11889
     },
     {
       "id": "SAFE-02",
@@ -116,7 +118,7 @@
         "answer_content": true
       },
       "throttled": false,
-      "latency_ms": 15110
+      "latency_ms": 19179
     },
     {
       "id": "SAFE-03",
@@ -130,7 +132,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 14405
+      "latency_ms": 71571
     },
     {
       "id": "ESC-01",
@@ -144,7 +146,7 @@
         "answer_content": true
       },
       "throttled": false,
-      "latency_ms": 207172
+      "latency_ms": 86451
     },
     {
       "id": "ESC-02",
@@ -158,7 +160,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 402702
+      "latency_ms": 418602
     },
     {
       "id": "AMB-01",
@@ -172,7 +174,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 137875
+      "latency_ms": 3626
     },
     {
       "id": "OOS-01",
@@ -186,7 +188,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 88452
+      "latency_ms": 5672
     },
     {
       "id": "OOS-02",
@@ -200,7 +202,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 593
+      "latency_ms": 179093
     },
     {
       "id": "PQA-01",
@@ -214,7 +216,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 99328
+      "latency_ms": 139436
     },
     {
       "id": "PQA-02",
@@ -228,7 +230,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 5108
+      "latency_ms": 152729
     },
     {
       "id": "PQA-03",
@@ -242,7 +244,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 80077
+      "latency_ms": 1906
     },
     {
       "id": "PQA-04",
@@ -256,7 +258,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 75375
+      "latency_ms": 30714
     },
     {
       "id": "PQA-05",
@@ -270,7 +272,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 64281
+      "latency_ms": 39933
     },
     {
       "id": "PQA-06",
@@ -284,21 +286,21 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 30500
+      "latency_ms": 29134
     },
     {
       "id": "PQA-07",
       "category": "policy_qa",
       "checks": {
-        "intent": false,
+        "intent": true,
         "tool_selection": null,
-        "citations": false,
+        "citations": true,
         "confirmation_gate": null,
         "escalation": null,
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 16796
+      "latency_ms": 39924
     },
     {
       "id": "PQA-08",
@@ -312,7 +314,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 21500
+      "latency_ms": 16401
     },
     {
       "id": "MD-01",
@@ -326,7 +328,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 62860
+      "latency_ms": 23362
     },
     {
       "id": "MD-02",
@@ -340,7 +342,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 23172
+      "latency_ms": 38313
     },
     {
       "id": "MD-03",
@@ -354,7 +356,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 32563
+      "latency_ms": 57776
     },
     {
       "id": "MD-04",
@@ -368,7 +370,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 49656
+      "latency_ms": 58506
     },
     {
       "id": "MD-05",
@@ -382,7 +384,7 @@
         "answer_content": null
       },
       "throttled": false,
-      "latency_ms": 33375
+      "latency_ms": 64974
     }
   ]
 }

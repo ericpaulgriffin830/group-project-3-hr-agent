@@ -56,20 +56,49 @@ The brief names these explicitly.
 
 **Still open:** `design-and-evaluation.md` sections 7 (Rob) and 8 (Eric) are
 stubs, and the assembly note at the top of that file must be **deleted** before
-submission. `ai-tooling.md` needs Rob's and Eric's paragraphs.
+submission. `ai-tooling.md` needs Rob's and Eric's paragraphs. Section 9 is
+written and its numbers are committed.
+
+**One item for Rob in section 9.3, flagged rather than fixed in his module:**
+`retrieve()` returns `retrieval_mode: "hybrid"` whether or not the vector leg
+contributed anything, so a BM25-only run is indistinguishable from a fused one in
+its own output. With `data/chroma` unbuilt it reported `hybrid` while scoring
+12/13 on BM25 alone, which nearly got published as a hybrid-vs-vector result.
 
 ---
 
 ## Evaluation results must be in the file, not just in a script
 
-- [ ] `run_eval.py` executed against the **deployed** app, results committed
-- [ ] Answer quality: groundedness, citation accuracy
-- [ ] Agent behaviour: tool selection, workflow completion, escalation/clarification
-      accuracy, action-safety pass rate
-- [ ] Latency p50/p95, **cold-start and warm-start reported separately** — the
-      brief asks for this specifically
-- [ ] At least one ablation (k ∈ {3,5,8}, chunk size, or hybrid vs vector-only)
-- [ ] Results tables land in `design-and-evaluation.md` section 9
+- [x] **Answer quality: groundedness, citation accuracy.** 27 items, full run
+      2026-09-29, `evaluation/results.json`. 24/27 fully correct; citation accuracy
+      12/15. All three failures are `multi_document`, and the ablation attributes
+      them: one retrieval, two synthesis.
+- [x] **Agent behaviour:** intent 26/26, tool selection 10/10, confirmation gate
+      14/14, escalation 14/14, action safety 3/3.
+- [x] **At least one ablation.** `evaluation/ablation.py` — k ∈ {3,5,8} × {hybrid,
+      vector-only}, plus a vector-leg-unavailable cell. No LLM, so it is
+      reproducible to the chunk; two runs byte-identical.
+- [x] **Results tables in `design-and-evaluation.md` section 9**, cross-checked
+      against the JSON reports rather than transcribed by eye.
+- [x] **Latency: cold-start and warm-start reported separately.** Instance wake
+      71.5s, first question a further 68s, warm p50 15.0s. The two-cost split is
+      the part `deployed.md` was missing: `/health` reports `index_ready` without
+      loading the embedding model, so the service answers it while still one lazy
+      load away from answering a question.
+- [ ] **Re-take the deployed numbers after PR #9 merges.** Gated on the merge, not
+      on anyone's time. The warm figures are **n=3**, and they were measured on the
+      pre-fix build where workflow turns refused early and were therefore faster
+      than they now are. One command, serial by default:
+      ```bash
+      uv run python evaluation/run_eval.py --api-base-url https://hr-agent-api-s2ux.onrender.com
+      ```
+      Writes `evaluation/results.deployed.json`, so it cannot overwrite the
+      in-process report. Commit that file and update section 9.4.
+
+**Do not report in-process latency.** The 27-item run at concurrency 6 gives p50
+57.8s / p95 346s, and that is the shared Groq token budget, not the agent — the SDK
+retries a 429 inside the request, so rate-limit waiting is inside the measured span.
+`run_eval.py` prints that warning itself now.
 
 **Run the eval against the deployed app, not localhost** — the URLs are in
 `deployed.md`. Warm both services first, or the first few items absorb the

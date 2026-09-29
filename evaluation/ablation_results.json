@@ -1,0 +1,3443 @@
+{
+  "generated_at": "2026-09-29T12:16:04.797216+00:00",
+  "pattern": "evaluation/eval_set.*.json",
+  "scored_items": 15,
+  "chunks_indexed": 106,
+  "k_values": [
+    3,
+    5,
+    8
+  ],
+  "modes": [
+    "hybrid",
+    "vector_only"
+  ],
+  "cells": [
+    {
+      "k": 3,
+      "mode": "hybrid",
+      "retrieval_only": {
+        "items_complete": 11,
+        "items": 13,
+        "docs_found": 17,
+        "docs_required": 19,
+        "mean_docs_returned": 2,
+        "median_latency_ms": 4.6
+      },
+      "agentic_raw_question": {
+        "items_complete": 2,
+        "items": 2,
+        "docs_found": 3,
+        "docs_required": 3,
+        "mean_docs_returned": 2,
+        "median_latency_ms": 5.0
+      },
+      "all": {
+        "items_complete": 13,
+        "items": 15,
+        "docs_found": 20,
+        "docs_required": 22,
+        "mean_docs_returned": 2,
+        "median_latency_ms": 4.7
+      },
+      "per_item": [
+        {
+          "id": "AG-01",
+          "category": "agentic_multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 5.2
+        },
+        {
+          "id": "AG-02",
+          "category": "agentic_multi_document",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.7
+        },
+        {
+          "id": "PQA-01",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.6
+        },
+        {
+          "id": "PQA-02",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 3.6
+        },
+        {
+          "id": "PQA-03",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.6
+        },
+        {
+          "id": "PQA-04",
+          "category": "policy_qa",
+          "required": [
+            "EXPENSE"
+          ],
+          "found": [
+            "EXPENSE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 5.0
+        },
+        {
+          "id": "PQA-05",
+          "category": "policy_qa",
+          "required": [
+            "EQUIPMENT"
+          ],
+          "found": [
+            "EQUIPMENT"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.6
+        },
+        {
+          "id": "PQA-06",
+          "category": "policy_qa",
+          "required": [
+            "INFOSEC"
+          ],
+          "found": [
+            "INFOSEC"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 3.5
+        },
+        {
+          "id": "PQA-07",
+          "category": "policy_qa",
+          "required": [
+            "LEAVE"
+          ],
+          "found": [
+            "LEAVE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.0
+        },
+        {
+          "id": "PQA-08",
+          "category": "policy_qa",
+          "required": [
+            "BENEFITS"
+          ],
+          "found": [
+            "BENEFITS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.2
+        },
+        {
+          "id": "MD-01",
+          "category": "multi_document",
+          "required": [
+            "INFOSEC",
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [
+            "INFOSEC"
+          ],
+          "complete": false,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 5.2
+        },
+        {
+          "id": "MD-02",
+          "category": "multi_document",
+          "required": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 5.5
+        },
+        {
+          "id": "MD-03",
+          "category": "multi_document",
+          "required": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "found": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.7
+        },
+        {
+          "id": "MD-04",
+          "category": "multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 5.3
+        },
+        {
+          "id": "MD-05",
+          "category": "multi_document",
+          "required": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "ONBOARDING"
+          ],
+          "missed": [
+            "TAX-LOCATION"
+          ],
+          "complete": false,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.7
+        }
+      ]
+    },
+    {
+      "k": 5,
+      "mode": "hybrid",
+      "retrieval_only": {
+        "items_complete": 12,
+        "items": 13,
+        "docs_found": 18,
+        "docs_required": 19,
+        "mean_docs_returned": 3.23,
+        "median_latency_ms": 4.4
+      },
+      "agentic_raw_question": {
+        "items_complete": 2,
+        "items": 2,
+        "docs_found": 3,
+        "docs_required": 3,
+        "mean_docs_returned": 3.5,
+        "median_latency_ms": 4.0
+      },
+      "all": {
+        "items_complete": 14,
+        "items": 15,
+        "docs_found": 21,
+        "docs_required": 22,
+        "mean_docs_returned": 3.27,
+        "median_latency_ms": 4.1
+      },
+      "per_item": [
+        {
+          "id": "AG-01",
+          "category": "agentic_multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.0
+        },
+        {
+          "id": "AG-02",
+          "category": "agentic_multi_document",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 4,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.1
+        },
+        {
+          "id": "PQA-01",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 4,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.4
+        },
+        {
+          "id": "PQA-02",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 3.5
+        },
+        {
+          "id": "PQA-03",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.1
+        },
+        {
+          "id": "PQA-04",
+          "category": "policy_qa",
+          "required": [
+            "EXPENSE"
+          ],
+          "found": [
+            "EXPENSE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 5.3
+        },
+        {
+          "id": "PQA-05",
+          "category": "policy_qa",
+          "required": [
+            "EQUIPMENT"
+          ],
+          "found": [
+            "EQUIPMENT"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 4,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.0
+        },
+        {
+          "id": "PQA-06",
+          "category": "policy_qa",
+          "required": [
+            "INFOSEC"
+          ],
+          "found": [
+            "INFOSEC"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 4,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 3.7
+        },
+        {
+          "id": "PQA-07",
+          "category": "policy_qa",
+          "required": [
+            "LEAVE"
+          ],
+          "found": [
+            "LEAVE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 3.4
+        },
+        {
+          "id": "PQA-08",
+          "category": "policy_qa",
+          "required": [
+            "BENEFITS"
+          ],
+          "found": [
+            "BENEFITS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 3.7
+        },
+        {
+          "id": "MD-01",
+          "category": "multi_document",
+          "required": [
+            "INFOSEC",
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [
+            "INFOSEC"
+          ],
+          "complete": false,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 5.2
+        },
+        {
+          "id": "MD-02",
+          "category": "multi_document",
+          "required": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 5.1
+        },
+        {
+          "id": "MD-03",
+          "category": "multi_document",
+          "required": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "found": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.8
+        },
+        {
+          "id": "MD-04",
+          "category": "multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.5
+        },
+        {
+          "id": "MD-05",
+          "category": "multi_document",
+          "required": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.8
+        }
+      ]
+    },
+    {
+      "k": 8,
+      "mode": "hybrid",
+      "retrieval_only": {
+        "items_complete": 12,
+        "items": 13,
+        "docs_found": 18,
+        "docs_required": 19,
+        "mean_docs_returned": 4.92,
+        "median_latency_ms": 4.5
+      },
+      "agentic_raw_question": {
+        "items_complete": 2,
+        "items": 2,
+        "docs_found": 3,
+        "docs_required": 3,
+        "mean_docs_returned": 4.5,
+        "median_latency_ms": 4.3
+      },
+      "all": {
+        "items_complete": 14,
+        "items": 15,
+        "docs_found": 21,
+        "docs_required": 22,
+        "mean_docs_returned": 4.87,
+        "median_latency_ms": 4.4
+      },
+      "per_item": [
+        {
+          "id": "AG-01",
+          "category": "agentic_multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 4,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.3
+        },
+        {
+          "id": "AG-02",
+          "category": "agentic_multi_document",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.4
+        },
+        {
+          "id": "PQA-01",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 6,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.4
+        },
+        {
+          "id": "PQA-02",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 6,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 3.6
+        },
+        {
+          "id": "PQA-03",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.3
+        },
+        {
+          "id": "PQA-04",
+          "category": "policy_qa",
+          "required": [
+            "EXPENSE"
+          ],
+          "found": [
+            "EXPENSE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 4,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 5.1
+        },
+        {
+          "id": "PQA-05",
+          "category": "policy_qa",
+          "required": [
+            "EQUIPMENT"
+          ],
+          "found": [
+            "EQUIPMENT"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.4
+        },
+        {
+          "id": "PQA-06",
+          "category": "policy_qa",
+          "required": [
+            "INFOSEC"
+          ],
+          "found": [
+            "INFOSEC"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 3.8
+        },
+        {
+          "id": "PQA-07",
+          "category": "policy_qa",
+          "required": [
+            "LEAVE"
+          ],
+          "found": [
+            "LEAVE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.0
+        },
+        {
+          "id": "PQA-08",
+          "category": "policy_qa",
+          "required": [
+            "BENEFITS"
+          ],
+          "found": [
+            "BENEFITS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.5
+        },
+        {
+          "id": "MD-01",
+          "category": "multi_document",
+          "required": [
+            "INFOSEC",
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [
+            "INFOSEC"
+          ],
+          "complete": false,
+          "docs_returned": 4,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 5.5
+        },
+        {
+          "id": "MD-02",
+          "category": "multi_document",
+          "required": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 4,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 5.3
+        },
+        {
+          "id": "MD-03",
+          "category": "multi_document",
+          "required": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "found": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 5.0
+        },
+        {
+          "id": "MD-04",
+          "category": "multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 4.9
+        },
+        {
+          "id": "MD-05",
+          "category": "multi_document",
+          "required": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 5.0
+        }
+      ]
+    },
+    {
+      "k": 3,
+      "mode": "vector_only",
+      "retrieval_only": {
+        "items_complete": 12,
+        "items": 13,
+        "docs_found": 18,
+        "docs_required": 19,
+        "mean_docs_returned": 2.08,
+        "median_latency_ms": 4.5
+      },
+      "agentic_raw_question": {
+        "items_complete": 2,
+        "items": 2,
+        "docs_found": 3,
+        "docs_required": 3,
+        "mean_docs_returned": 2,
+        "median_latency_ms": 4.2
+      },
+      "all": {
+        "items_complete": 14,
+        "items": 15,
+        "docs_found": 21,
+        "docs_required": 22,
+        "mean_docs_returned": 2.07,
+        "median_latency_ms": 4.5
+      },
+      "per_item": [
+        {
+          "id": "AG-01",
+          "category": "agentic_multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.0
+        },
+        {
+          "id": "AG-02",
+          "category": "agentic_multi_document",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.5
+        },
+        {
+          "id": "PQA-01",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.6
+        },
+        {
+          "id": "PQA-02",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 3.3
+        },
+        {
+          "id": "PQA-03",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.0
+        },
+        {
+          "id": "PQA-04",
+          "category": "policy_qa",
+          "required": [
+            "EXPENSE"
+          ],
+          "found": [
+            "EXPENSE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.8
+        },
+        {
+          "id": "PQA-05",
+          "category": "policy_qa",
+          "required": [
+            "EQUIPMENT"
+          ],
+          "found": [
+            "EQUIPMENT"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.1
+        },
+        {
+          "id": "PQA-06",
+          "category": "policy_qa",
+          "required": [
+            "INFOSEC"
+          ],
+          "found": [
+            "INFOSEC"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 3.6
+        },
+        {
+          "id": "PQA-07",
+          "category": "policy_qa",
+          "required": [
+            "LEAVE"
+          ],
+          "found": [
+            "LEAVE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 3.6
+        },
+        {
+          "id": "PQA-08",
+          "category": "policy_qa",
+          "required": [
+            "BENEFITS"
+          ],
+          "found": [
+            "BENEFITS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.0
+        },
+        {
+          "id": "MD-01",
+          "category": "multi_document",
+          "required": [
+            "INFOSEC",
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [
+            "INFOSEC"
+          ],
+          "complete": false,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 5.1
+        },
+        {
+          "id": "MD-02",
+          "category": "multi_document",
+          "required": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 5.4
+        },
+        {
+          "id": "MD-03",
+          "category": "multi_document",
+          "required": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "found": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.5
+        },
+        {
+          "id": "MD-04",
+          "category": "multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.7
+        },
+        {
+          "id": "MD-05",
+          "category": "multi_document",
+          "required": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 3,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 5.1
+        }
+      ]
+    },
+    {
+      "k": 5,
+      "mode": "vector_only",
+      "retrieval_only": {
+        "items_complete": 12,
+        "items": 13,
+        "docs_found": 18,
+        "docs_required": 19,
+        "mean_docs_returned": 3.15,
+        "median_latency_ms": 4.4
+      },
+      "agentic_raw_question": {
+        "items_complete": 2,
+        "items": 2,
+        "docs_found": 3,
+        "docs_required": 3,
+        "mean_docs_returned": 3,
+        "median_latency_ms": 4.3
+      },
+      "all": {
+        "items_complete": 14,
+        "items": 15,
+        "docs_found": 21,
+        "docs_required": 22,
+        "mean_docs_returned": 3.13,
+        "median_latency_ms": 4.4
+      },
+      "per_item": [
+        {
+          "id": "AG-01",
+          "category": "agentic_multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.1
+        },
+        {
+          "id": "AG-02",
+          "category": "agentic_multi_document",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.6
+        },
+        {
+          "id": "PQA-01",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 4,
+          "chunks_returned": 5,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.4
+        },
+        {
+          "id": "PQA-02",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 3.5
+        },
+        {
+          "id": "PQA-03",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 3.9
+        },
+        {
+          "id": "PQA-04",
+          "category": "policy_qa",
+          "required": [
+            "EXPENSE"
+          ],
+          "found": [
+            "EXPENSE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 5.0
+        },
+        {
+          "id": "PQA-05",
+          "category": "policy_qa",
+          "required": [
+            "EQUIPMENT"
+          ],
+          "found": [
+            "EQUIPMENT"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 4,
+          "chunks_returned": 5,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 3.8
+        },
+        {
+          "id": "PQA-06",
+          "category": "policy_qa",
+          "required": [
+            "INFOSEC"
+          ],
+          "found": [
+            "INFOSEC"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 3.2
+        },
+        {
+          "id": "PQA-07",
+          "category": "policy_qa",
+          "required": [
+            "LEAVE"
+          ],
+          "found": [
+            "LEAVE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 3.7
+        },
+        {
+          "id": "PQA-08",
+          "category": "policy_qa",
+          "required": [
+            "BENEFITS"
+          ],
+          "found": [
+            "BENEFITS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 3.9
+        },
+        {
+          "id": "MD-01",
+          "category": "multi_document",
+          "required": [
+            "INFOSEC",
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [
+            "INFOSEC"
+          ],
+          "complete": false,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 5.1
+        },
+        {
+          "id": "MD-02",
+          "category": "multi_document",
+          "required": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 5.0
+        },
+        {
+          "id": "MD-03",
+          "category": "multi_document",
+          "required": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "found": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.5
+        },
+        {
+          "id": "MD-04",
+          "category": "multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 5.0
+        },
+        {
+          "id": "MD-05",
+          "category": "multi_document",
+          "required": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.9
+        }
+      ]
+    },
+    {
+      "k": 8,
+      "mode": "vector_only",
+      "retrieval_only": {
+        "items_complete": 12,
+        "items": 13,
+        "docs_found": 18,
+        "docs_required": 19,
+        "mean_docs_returned": 5.15,
+        "median_latency_ms": 4.5
+      },
+      "agentic_raw_question": {
+        "items_complete": 2,
+        "items": 2,
+        "docs_found": 3,
+        "docs_required": 3,
+        "mean_docs_returned": 4.5,
+        "median_latency_ms": 4.3
+      },
+      "all": {
+        "items_complete": 14,
+        "items": 15,
+        "docs_found": 21,
+        "docs_required": 22,
+        "mean_docs_returned": 5.07,
+        "median_latency_ms": 4.5
+      },
+      "per_item": [
+        {
+          "id": "AG-01",
+          "category": "agentic_multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.1
+        },
+        {
+          "id": "AG-02",
+          "category": "agentic_multi_document",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 4,
+          "chunks_returned": 8,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.6
+        },
+        {
+          "id": "PQA-01",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 6,
+          "chunks_returned": 8,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.6
+        },
+        {
+          "id": "PQA-02",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 6,
+          "chunks_returned": 8,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 3.3
+        },
+        {
+          "id": "PQA-03",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.4
+        },
+        {
+          "id": "PQA-04",
+          "category": "policy_qa",
+          "required": [
+            "EXPENSE"
+          ],
+          "found": [
+            "EXPENSE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.8
+        },
+        {
+          "id": "PQA-05",
+          "category": "policy_qa",
+          "required": [
+            "EQUIPMENT"
+          ],
+          "found": [
+            "EQUIPMENT"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 6,
+          "chunks_returned": 8,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.3
+        },
+        {
+          "id": "PQA-06",
+          "category": "policy_qa",
+          "required": [
+            "INFOSEC"
+          ],
+          "found": [
+            "INFOSEC"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 3.7
+        },
+        {
+          "id": "PQA-07",
+          "category": "policy_qa",
+          "required": [
+            "LEAVE"
+          ],
+          "found": [
+            "LEAVE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 3.7
+        },
+        {
+          "id": "PQA-08",
+          "category": "policy_qa",
+          "required": [
+            "BENEFITS"
+          ],
+          "found": [
+            "BENEFITS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 3.9
+        },
+        {
+          "id": "MD-01",
+          "category": "multi_document",
+          "required": [
+            "INFOSEC",
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [
+            "INFOSEC"
+          ],
+          "complete": false,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.9
+        },
+        {
+          "id": "MD-02",
+          "category": "multi_document",
+          "required": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 5.7
+        },
+        {
+          "id": "MD-03",
+          "category": "multi_document",
+          "required": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "found": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 4,
+          "chunks_returned": 8,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.5
+        },
+        {
+          "id": "MD-04",
+          "category": "multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 5.1
+        },
+        {
+          "id": "MD-05",
+          "category": "multi_document",
+          "required": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 4.7
+        }
+      ]
+    }
+  ],
+  "degraded_cells": [
+    {
+      "k": 3,
+      "mode": "hybrid",
+      "retrieval_only": {
+        "items_complete": 12,
+        "items": 13,
+        "docs_found": 17,
+        "docs_required": 19,
+        "mean_docs_returned": 2.23,
+        "median_latency_ms": 0.2
+      },
+      "agentic_raw_question": {
+        "items_complete": 2,
+        "items": 2,
+        "docs_found": 3,
+        "docs_required": 3,
+        "mean_docs_returned": 2,
+        "median_latency_ms": 0.1
+      },
+      "all": {
+        "items_complete": 14,
+        "items": 15,
+        "docs_found": 20,
+        "docs_required": 22,
+        "mean_docs_returned": 2.2,
+        "median_latency_ms": 0.1
+      },
+      "per_item": [
+        {
+          "id": "AG-01",
+          "category": "agentic_multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "AG-02",
+          "category": "agentic_multi_document",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-01",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.2
+        },
+        {
+          "id": "PQA-02",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-03",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-04",
+          "category": "policy_qa",
+          "required": [
+            "EXPENSE"
+          ],
+          "found": [
+            "EXPENSE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.2
+        },
+        {
+          "id": "PQA-05",
+          "category": "policy_qa",
+          "required": [
+            "EQUIPMENT"
+          ],
+          "found": [
+            "EQUIPMENT"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-06",
+          "category": "policy_qa",
+          "required": [
+            "INFOSEC"
+          ],
+          "found": [
+            "INFOSEC"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-07",
+          "category": "policy_qa",
+          "required": [
+            "LEAVE"
+          ],
+          "found": [
+            "LEAVE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-08",
+          "category": "policy_qa",
+          "required": [
+            "BENEFITS"
+          ],
+          "found": [
+            "BENEFITS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "MD-01",
+          "category": "multi_document",
+          "required": [
+            "INFOSEC",
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "TAX-LOCATION"
+          ],
+          "missed": [
+            "INFOSEC",
+            "REMOTE-WORK"
+          ],
+          "complete": false,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.2
+        },
+        {
+          "id": "MD-02",
+          "category": "multi_document",
+          "required": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.2
+        },
+        {
+          "id": "MD-03",
+          "category": "multi_document",
+          "required": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "found": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.2
+        },
+        {
+          "id": "MD-04",
+          "category": "multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 2,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.2
+        },
+        {
+          "id": "MD-05",
+          "category": "multi_document",
+          "required": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 3,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.2
+        }
+      ],
+      "vector_leg": "unavailable"
+    },
+    {
+      "k": 5,
+      "mode": "hybrid",
+      "retrieval_only": {
+        "items_complete": 12,
+        "items": 13,
+        "docs_found": 18,
+        "docs_required": 19,
+        "mean_docs_returned": 3.69,
+        "median_latency_ms": 0.2
+      },
+      "agentic_raw_question": {
+        "items_complete": 2,
+        "items": 2,
+        "docs_found": 3,
+        "docs_required": 3,
+        "mean_docs_returned": 3.5,
+        "median_latency_ms": 0.1
+      },
+      "all": {
+        "items_complete": 14,
+        "items": 15,
+        "docs_found": 21,
+        "docs_required": 22,
+        "mean_docs_returned": 3.67,
+        "median_latency_ms": 0.1
+      },
+      "per_item": [
+        {
+          "id": "AG-01",
+          "category": "agentic_multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "AG-02",
+          "category": "agentic_multi_document",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 4,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-01",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 4,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-02",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 4,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-03",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 4,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-04",
+          "category": "policy_qa",
+          "required": [
+            "EXPENSE"
+          ],
+          "found": [
+            "EXPENSE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.2
+        },
+        {
+          "id": "PQA-05",
+          "category": "policy_qa",
+          "required": [
+            "EQUIPMENT"
+          ],
+          "found": [
+            "EQUIPMENT"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 4,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.2
+        },
+        {
+          "id": "PQA-06",
+          "category": "policy_qa",
+          "required": [
+            "INFOSEC"
+          ],
+          "found": [
+            "INFOSEC"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.2
+        },
+        {
+          "id": "PQA-07",
+          "category": "policy_qa",
+          "required": [
+            "LEAVE"
+          ],
+          "found": [
+            "LEAVE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 4,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-08",
+          "category": "policy_qa",
+          "required": [
+            "BENEFITS"
+          ],
+          "found": [
+            "BENEFITS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 4,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "MD-01",
+          "category": "multi_document",
+          "required": [
+            "INFOSEC",
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [
+            "INFOSEC"
+          ],
+          "complete": false,
+          "docs_returned": 4,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.2
+        },
+        {
+          "id": "MD-02",
+          "category": "multi_document",
+          "required": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.2
+        },
+        {
+          "id": "MD-03",
+          "category": "multi_document",
+          "required": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "found": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 3,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "MD-04",
+          "category": "multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 4,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.2
+        },
+        {
+          "id": "MD-05",
+          "category": "multi_document",
+          "required": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 4,
+          "chunks_returned": 5,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.2
+        }
+      ],
+      "vector_leg": "unavailable"
+    },
+    {
+      "k": 8,
+      "mode": "hybrid",
+      "retrieval_only": {
+        "items_complete": 12,
+        "items": 13,
+        "docs_found": 18,
+        "docs_required": 19,
+        "mean_docs_returned": 5.31,
+        "median_latency_ms": 0.1
+      },
+      "agentic_raw_question": {
+        "items_complete": 2,
+        "items": 2,
+        "docs_found": 3,
+        "docs_required": 3,
+        "mean_docs_returned": 6,
+        "median_latency_ms": 0.1
+      },
+      "all": {
+        "items_complete": 14,
+        "items": 15,
+        "docs_found": 21,
+        "docs_required": 22,
+        "mean_docs_returned": 5.4,
+        "median_latency_ms": 0.1
+      },
+      "per_item": [
+        {
+          "id": "AG-01",
+          "category": "agentic_multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "AG-02",
+          "category": "agentic_multi_document",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 7,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-01",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 6,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-02",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-03",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 6,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-04",
+          "category": "policy_qa",
+          "required": [
+            "EXPENSE"
+          ],
+          "found": [
+            "EXPENSE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.2
+        },
+        {
+          "id": "PQA-05",
+          "category": "policy_qa",
+          "required": [
+            "EQUIPMENT"
+          ],
+          "found": [
+            "EQUIPMENT"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 6,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-06",
+          "category": "policy_qa",
+          "required": [
+            "INFOSEC"
+          ],
+          "found": [
+            "INFOSEC"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-07",
+          "category": "policy_qa",
+          "required": [
+            "LEAVE"
+          ],
+          "found": [
+            "LEAVE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-08",
+          "category": "policy_qa",
+          "required": [
+            "BENEFITS"
+          ],
+          "found": [
+            "BENEFITS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 6,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "MD-01",
+          "category": "multi_document",
+          "required": [
+            "INFOSEC",
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [
+            "INFOSEC"
+          ],
+          "complete": false,
+          "docs_returned": 6,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.2
+        },
+        {
+          "id": "MD-02",
+          "category": "multi_document",
+          "required": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "found": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "MD-03",
+          "category": "multi_document",
+          "required": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "found": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "MD-04",
+          "category": "multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 4,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.2
+        },
+        {
+          "id": "MD-05",
+          "category": "multi_document",
+          "required": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "found": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "missed": [],
+          "complete": true,
+          "docs_returned": 5,
+          "chunks_returned": 8,
+          "retrieval_mode": "hybrid",
+          "latency_ms": 0.2
+        }
+      ],
+      "vector_leg": "unavailable"
+    },
+    {
+      "k": 3,
+      "mode": "vector_only",
+      "retrieval_only": {
+        "items_complete": 0,
+        "items": 13,
+        "docs_found": 0,
+        "docs_required": 19,
+        "mean_docs_returned": 0,
+        "median_latency_ms": 0.1
+      },
+      "agentic_raw_question": {
+        "items_complete": 0,
+        "items": 2,
+        "docs_found": 0,
+        "docs_required": 3,
+        "mean_docs_returned": 0,
+        "median_latency_ms": 0.1
+      },
+      "all": {
+        "items_complete": 0,
+        "items": 15,
+        "docs_found": 0,
+        "docs_required": 22,
+        "mean_docs_returned": 0,
+        "median_latency_ms": 0.1
+      },
+      "per_item": [
+        {
+          "id": "AG-01",
+          "category": "agentic_multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [],
+          "missed": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "AG-02",
+          "category": "agentic_multi_document",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [],
+          "missed": [
+            "PTO-HOLIDAYS"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-01",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [],
+          "missed": [
+            "PTO-HOLIDAYS"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-02",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [],
+          "missed": [
+            "PTO-HOLIDAYS"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-03",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [],
+          "missed": [
+            "PTO-HOLIDAYS"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-04",
+          "category": "policy_qa",
+          "required": [
+            "EXPENSE"
+          ],
+          "found": [],
+          "missed": [
+            "EXPENSE"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-05",
+          "category": "policy_qa",
+          "required": [
+            "EQUIPMENT"
+          ],
+          "found": [],
+          "missed": [
+            "EQUIPMENT"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-06",
+          "category": "policy_qa",
+          "required": [
+            "INFOSEC"
+          ],
+          "found": [],
+          "missed": [
+            "INFOSEC"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-07",
+          "category": "policy_qa",
+          "required": [
+            "LEAVE"
+          ],
+          "found": [],
+          "missed": [
+            "LEAVE"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-08",
+          "category": "policy_qa",
+          "required": [
+            "BENEFITS"
+          ],
+          "found": [],
+          "missed": [
+            "BENEFITS"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "MD-01",
+          "category": "multi_document",
+          "required": [
+            "INFOSEC",
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [],
+          "missed": [
+            "INFOSEC",
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "MD-02",
+          "category": "multi_document",
+          "required": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "found": [],
+          "missed": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "MD-03",
+          "category": "multi_document",
+          "required": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "found": [],
+          "missed": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "MD-04",
+          "category": "multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [],
+          "missed": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "MD-05",
+          "category": "multi_document",
+          "required": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "found": [],
+          "missed": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        }
+      ],
+      "vector_leg": "unavailable"
+    },
+    {
+      "k": 5,
+      "mode": "vector_only",
+      "retrieval_only": {
+        "items_complete": 0,
+        "items": 13,
+        "docs_found": 0,
+        "docs_required": 19,
+        "mean_docs_returned": 0,
+        "median_latency_ms": 0.1
+      },
+      "agentic_raw_question": {
+        "items_complete": 0,
+        "items": 2,
+        "docs_found": 0,
+        "docs_required": 3,
+        "mean_docs_returned": 0,
+        "median_latency_ms": 0.1
+      },
+      "all": {
+        "items_complete": 0,
+        "items": 15,
+        "docs_found": 0,
+        "docs_required": 22,
+        "mean_docs_returned": 0,
+        "median_latency_ms": 0.1
+      },
+      "per_item": [
+        {
+          "id": "AG-01",
+          "category": "agentic_multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [],
+          "missed": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "AG-02",
+          "category": "agentic_multi_document",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [],
+          "missed": [
+            "PTO-HOLIDAYS"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-01",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [],
+          "missed": [
+            "PTO-HOLIDAYS"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-02",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [],
+          "missed": [
+            "PTO-HOLIDAYS"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-03",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [],
+          "missed": [
+            "PTO-HOLIDAYS"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-04",
+          "category": "policy_qa",
+          "required": [
+            "EXPENSE"
+          ],
+          "found": [],
+          "missed": [
+            "EXPENSE"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-05",
+          "category": "policy_qa",
+          "required": [
+            "EQUIPMENT"
+          ],
+          "found": [],
+          "missed": [
+            "EQUIPMENT"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-06",
+          "category": "policy_qa",
+          "required": [
+            "INFOSEC"
+          ],
+          "found": [],
+          "missed": [
+            "INFOSEC"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-07",
+          "category": "policy_qa",
+          "required": [
+            "LEAVE"
+          ],
+          "found": [],
+          "missed": [
+            "LEAVE"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-08",
+          "category": "policy_qa",
+          "required": [
+            "BENEFITS"
+          ],
+          "found": [],
+          "missed": [
+            "BENEFITS"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "MD-01",
+          "category": "multi_document",
+          "required": [
+            "INFOSEC",
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [],
+          "missed": [
+            "INFOSEC",
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "MD-02",
+          "category": "multi_document",
+          "required": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "found": [],
+          "missed": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "MD-03",
+          "category": "multi_document",
+          "required": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "found": [],
+          "missed": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "MD-04",
+          "category": "multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [],
+          "missed": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "MD-05",
+          "category": "multi_document",
+          "required": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "found": [],
+          "missed": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        }
+      ],
+      "vector_leg": "unavailable"
+    },
+    {
+      "k": 8,
+      "mode": "vector_only",
+      "retrieval_only": {
+        "items_complete": 0,
+        "items": 13,
+        "docs_found": 0,
+        "docs_required": 19,
+        "mean_docs_returned": 0,
+        "median_latency_ms": 0.1
+      },
+      "agentic_raw_question": {
+        "items_complete": 0,
+        "items": 2,
+        "docs_found": 0,
+        "docs_required": 3,
+        "mean_docs_returned": 0,
+        "median_latency_ms": 0.1
+      },
+      "all": {
+        "items_complete": 0,
+        "items": 15,
+        "docs_found": 0,
+        "docs_required": 22,
+        "mean_docs_returned": 0,
+        "median_latency_ms": 0.1
+      },
+      "per_item": [
+        {
+          "id": "AG-01",
+          "category": "agentic_multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [],
+          "missed": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "AG-02",
+          "category": "agentic_multi_document",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [],
+          "missed": [
+            "PTO-HOLIDAYS"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-01",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [],
+          "missed": [
+            "PTO-HOLIDAYS"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-02",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [],
+          "missed": [
+            "PTO-HOLIDAYS"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-03",
+          "category": "policy_qa",
+          "required": [
+            "PTO-HOLIDAYS"
+          ],
+          "found": [],
+          "missed": [
+            "PTO-HOLIDAYS"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-04",
+          "category": "policy_qa",
+          "required": [
+            "EXPENSE"
+          ],
+          "found": [],
+          "missed": [
+            "EXPENSE"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-05",
+          "category": "policy_qa",
+          "required": [
+            "EQUIPMENT"
+          ],
+          "found": [],
+          "missed": [
+            "EQUIPMENT"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-06",
+          "category": "policy_qa",
+          "required": [
+            "INFOSEC"
+          ],
+          "found": [],
+          "missed": [
+            "INFOSEC"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-07",
+          "category": "policy_qa",
+          "required": [
+            "LEAVE"
+          ],
+          "found": [],
+          "missed": [
+            "LEAVE"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "PQA-08",
+          "category": "policy_qa",
+          "required": [
+            "BENEFITS"
+          ],
+          "found": [],
+          "missed": [
+            "BENEFITS"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "MD-01",
+          "category": "multi_document",
+          "required": [
+            "INFOSEC",
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [],
+          "missed": [
+            "INFOSEC",
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "MD-02",
+          "category": "multi_document",
+          "required": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "found": [],
+          "missed": [
+            "LEAVE",
+            "PTO-HOLIDAYS"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "MD-03",
+          "category": "multi_document",
+          "required": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "found": [],
+          "missed": [
+            "EQUIPMENT",
+            "EXPENSE"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.1
+        },
+        {
+          "id": "MD-04",
+          "category": "multi_document",
+          "required": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "found": [],
+          "missed": [
+            "REMOTE-WORK",
+            "TAX-LOCATION"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.2
+        },
+        {
+          "id": "MD-05",
+          "category": "multi_document",
+          "required": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "found": [],
+          "missed": [
+            "ONBOARDING",
+            "TAX-LOCATION"
+          ],
+          "complete": false,
+          "docs_returned": 0,
+          "chunks_returned": 0,
+          "retrieval_mode": "vector_only",
+          "latency_ms": 0.2
+        }
+      ],
+      "vector_leg": "unavailable"
+    }
+  ]
+}

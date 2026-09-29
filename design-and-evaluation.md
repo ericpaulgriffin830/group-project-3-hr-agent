@@ -319,13 +319,186 @@ Chunking strategy, embedding model, retrieval k, vector store, hybrid + RRF.
 Render topology, free-tier constraints, cold-start behaviour, CI/CD gating.
 Measurements available in [`docs/DEPLOYMENT-NOTES.md`](docs/DEPLOYMENT-NOTES.md).
 
-## 9. Evaluation results *(all — to come)*
+## 9. Evaluation results *(Chris)*
 
-Item format is Contract E, in [`evaluation/README.md`](evaluation/README.md).
-27 items written. Method note worth keeping: **every item is executed against the
-live system before being committed**, because an eval set written from intention
-measures the author's optimism and passes by construction on the day it is written.
-Running Chris's 14 for the first time gave 8/14 and found four real agent bugs.
+Item format is Contract E, in [`evaluation/README.md`](evaluation/README.md). 27
+items across the five kinds the brief names, in three files so three people can
+edit them without a merge conflict every time.
+
+**Method note worth keeping:** every item is executed against the live system
+before being committed, because an eval set written from intention measures the
+author's optimism and passes by construction on the day it is written. Running
+Chris's 14 for the first time gave 8/14 and found four real agent bugs.
+
+Three harnesses, because they answer three different questions:
+
+| Script | Question | LLM? |
+|---|---|---|
+| `verify_expectations.py` | Does every item's `expected` block still hold? One bit per item, a pre-commit gate. | yes |
+| `run_eval.py` | What are the accuracy numbers, by check and by category, and how fast is it? | yes |
+| `ablation.py` | Does retrieval configuration matter? | **no** |
+
+### 9.1 Answer quality and agent behaviour
+
+Full 27-item run, `evaluation/results.json`, generated 2026-09-29 against the code
+in this commit. Every check is scored only on the items that declare an
+expectation of that kind — an item silent on citations is excluded from the
+citation denominator rather than counted as a free pass, which is why the
+denominators differ.
+
+| Check | Result | |
+|---|---|---|
+| Intent classification | 26/26 | 100% |
+| Tool selection | 10/10 | 100% |
+| Citation accuracy | 12/15 | **80%** |
+| Confirmation gate | 14/14 | 100% |
+| Escalation / clarification | 14/14 | 100% |
+| Answer content | 2/2 | 100% |
+
+**24 of 27 items fully correct.** By category:
+
+| Category | Items fully correct |
+|---|---|
+| `policy_qa` | 8/8 |
+| `multi_document` | **2/5** |
+| `agentic_multi_document` | 2/2 |
+| `tool_required` | 4/4 |
+| `action_safety` | 3/3 |
+| `escalation` | 2/2 |
+| `ambiguous` | 1/1 |
+| `out_of_scope` | 2/2 |
+
+Action safety is 3/3 and the confirmation gate 14/14, which matters more than the
+headline: no run created a ticket or drafted an email without a human token, and
+no item scored a forbidden tool call.
+
+### 9.2 The three failures, and which layer each belongs to
+
+All three are `multi_document` citation failures, all three route through the
+RAG-only path at `RAG_ONLY_K = 5`, and none were throttled. Because the ablation
+measures the same retrieval at the same k without a model in the way, the failures
+can be attributed rather than guessed at:
+
+| Item | Required | Retrieved at k=5 | Cited | Layer |
+|---|---|---|---|---|
+| MD-01 | `REMOTE-WORK`, `TAX-LOCATION`, `INFOSEC` | `REMOTE-WORK`, `TAX-LOCATION` | — | **retrieval** |
+| MD-02 | `LEAVE`, `PTO-HOLIDAYS` | both | incomplete | **synthesis** |
+| MD-05 | `ONBOARDING`, `TAX-LOCATION` | both | incomplete | **synthesis** |
+
+So **one retrieval failure and two citation failures**, not three of the same
+thing. MD-01 asks about working from Portugal and never surfaces the information
+security policy — and raising k to 8 does not fix it, so it is a matching problem
+rather than a depth problem. MD-02 and MD-05 had every required document in hand
+and the answer still did not cite both.
+
+That distinction is the whole reason the ablation exists. Without it, "citation
+accuracy 80%" is one number with no address.
+
+### 9.3 Retrieval ablation
+
+`evaluation/ablation.py`, over the 15 items that declare `must_cite_doc_ids`,
+scoring whether **every** required document was retrieved. No LLM: one variable
+changes per cell, so every number here is reproducible to the chunk on a laptop
+with no API key. Two consecutive runs were byte-identical.
+
+13 retrieval-only items (`policy_qa` + `multi_document`):
+
+| Mode | k | Items complete | Documents found | Mean docs returned |
+|---|---|---|---|---|
+| hybrid | 3 | 11/13 (85%) | 17/19 | 2.00 |
+| hybrid | 5 | 12/13 (92%) | 18/19 | 3.23 |
+| hybrid | 8 | 12/13 (92%) | 18/19 | 4.92 |
+| vector-only | 3 | 12/13 (92%) | 18/19 | 2.08 |
+| vector-only | 5 | 12/13 (92%) | 18/19 | 3.15 |
+| vector-only | 8 | 12/13 (92%) | 18/19 | 5.15 |
+
+**The honest reading: on this corpus and this eval set, hybrid and vector-only are
+indistinguishable.** They are identical at k=5 and k=8, and hybrid is one item
+*worse* at k=3. 12 documents and 106 chunks is not enough retrieval surface to
+separate two good ranking methods, and reporting a win here would be reporting
+noise. k=5 over k=3 is the one comparison that does separate: it recovers MD-05's
+`TAX-LOCATION`, and going on to k=8 buys nothing but 1.7 more documents of context
+per query.
+
+**Where hybrid does earn its place is degradation.** `data/chroma` is a build
+artifact, gitignored and rebuilt by `scripts.build_index` on every deploy. The
+first run of this ablation was made before that had ever run locally, so the
+collection held 0 chunks:
+
+| Mode | k | Items complete | Vector leg |
+|---|---|---|---|
+| hybrid | 3 | 12/13 (92%) | **unavailable** |
+| hybrid | 5 | 12/13 (92%) | **unavailable** |
+| hybrid | 8 | 12/13 (92%) | **unavailable** |
+| vector-only | any | **0/13 (0%)** | **unavailable** |
+
+With the embeddings gone, BM25 carried the entire system at full accuracy while
+vector-only retrieved nothing at all. That is the argument for fusing two
+retrievers on a corpus this small — not ranking quality, but what survives when
+half the machinery is missing. It is a cell in the report (`--no-degraded` turns it
+off) rather than an anecdote, because it was an accident the first time.
+
+**One defect found by that accident:** `retrieve()` reports
+`retrieval_mode: "hybrid"` whether or not the vector leg returned anything, so a
+BM25-only run is indistinguishable from a fused one in its own output. That is how
+an empty index nearly got published as a real hybrid-vs-vector result. `ablation.py`
+now refuses to run against an empty collection; the mislabel itself is still there
+and is noted here rather than quietly fixed in someone else's module.
+
+### 9.4 Latency
+
+Two measurements, and the brief asks for both because they are not the same thing.
+
+**Deployed, end to end over HTTP** — what a grader experiences. Measured
+2026-09-29 against `https://hr-agent-api-s2ux.onrender.com` from overnight idle:
+
+| | |
+|---|---|
+| Instance wake (`GET /health`) | **71.5s** |
+| First question after wake (`POST /chat`) | **68s** |
+| Warm | p50 **15.0s**, p95 68.1s, n=3 |
+
+**Waking the instance and serving the first question are two separate costs**, and
+this is the number `deployed.md` was missing. `/health` reports `index_ready` from
+the Chroma collection's count, which does not force the fastembed ONNX model into
+memory — the first retrieval does. So the service answers `/health` truthfully
+while still being one large lazy load away from answering a question. A grader who
+opens the app cold and asks immediately waits both, about 2m20s. The advice already
+in `docs/DEMO-SCRIPT.md` and `deployed.md` — send one throwaway question first — is
+what removes it, and `run_eval.py` now does exactly that and times it.
+
+The warm figures are **n=3 and provisional**. They are labelled that way rather
+than rounded up into a table that looks fuller than the evidence:
+
+```bash
+uv run python evaluation/run_eval.py \
+  --api-base-url https://hr-agent-api-s2ux.onrender.com
+```
+
+That run is serial by default. The free instance is 0.1 CPU and 512 MB; at
+concurrency 6 the p95 measures our own queueing rather than the service, and the
+report says so when you raise it. **It 502'd once under light serial load on
+2026-09-29** and recovered on its own in about four minutes — worth knowing before
+relying on it live.
+
+**In-process agent latency is deliberately not reported here.** The full 27-item
+run at concurrency 6 gives p50 57.8s and p95 346s, and those numbers measure the
+shared Groq token budget, not the agent: the SDK retries a 429 *inside* the
+request, so rate-limit waiting sits inside the measured span and is
+indistinguishable from slowness. Two items were throttled and retried serially.
+The harness now prints that warning itself rather than leaving the trap for the
+next reader.
+
+### 9.5 What these numbers do not cover
+
+- The warm percentiles are n=3. The command above, run once after deploy, fixes it.
+- Two bugs found on 2026-09-29 while verifying the deployed app are fixed in this
+  commit but were **not** deployed when the latency above was taken. Accuracy in
+  9.1 is from the fixed code; the latency is from the previous build, where
+  workflow turns refused early and were therefore *faster* than they now are.
+  Re-take it after this merges.
+- `eval_set.rob.json` does not exist, so the retrieval-quality items Contract E
+  reserves for Rob are not in any of these denominators.
 
 ## 10. Demo tasks *(Chris — done)*
 
