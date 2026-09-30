@@ -11,15 +11,15 @@ roughly even.
 ## Before you hit record
 
 - [ ] **Warm both services.** Free instances spin down after 15 minutes idle and
-      take ~1 minute to wake. Load the UI and run one throwaway question five
-      minutes before starting, or the first thing on camera is a loading screen.
+  take ~1 minute to wake. Load the UI and run one throwaway question five
+  minutes before starting, or the first thing on camera is a loading screen.
 - [ ] **Government ID in hand** — all three.
 - [ ] **One browser tab, UI already open**, trace panel visible.
 - [ ] **Don't hammer it during rehearsal.** A throttled call degrades *quietly* —
-      the agent falls through with less evidence and still answers. The trace panel
-      shows the guardrail step; the answer text does not. Space the retakes.
+  the agent falls through with less evidence and still answers. The trace panel
+  shows the guardrail step; the answer text does not. Space the retakes.
 - [ ] Check `/health` reads `mcp_connected: true`, `tools_discovered: 8`,
-      `index_ready: true`.
+  `index_ready: true`.
 
 ---
 
@@ -119,20 +119,35 @@ Confirm it, show the ticket id.
 
 ## 7:15–8:15 — RAG + evaluation (Rob, 1:00)
 
-- **Corpus:** 12 documents, 33 pages, markdown/HTML/TXT.
-- **Chunking:** one section, one chunk, never split — so whatever a query hits
-  already contains everything `get_policy_section` would return.
-- **Retrieval:** BM25 + vector fused by RRF, `BAAI/bge-small-en-v1.5` via
-  fastembed, capped at two chunks per document so one document can't flood the
-  top-k.
-- **Evaluation:** 27 items across all five kinds the brief names. Numbers from
-  `run_eval.py` — groundedness, citation accuracy, tool selection, workflow
-  completion, escalation accuracy, action safety, latency p50/p95 cold vs warm.
-- **The ablation:** k ∈ {3,5,8}, hybrid vs vector-only.
+Diagram: [`docs/RAG-PIPELINE.md`](RAG-PIPELINE.md) — data flow through every
+`app/rag/` file, if there's a question about how a piece connects.
 
-One line worth including if the numbers allow: *"every evaluation item was run
-against the live system before it was committed — the first run of one author's
-set was 8 of 14 and found four real bugs."*
+- **Corpus:** 12 HR policy documents, 106 sections. **Chunking:** one section, one
+  chunk, never split — so whatever a query hits already contains everything
+  `get_policy_section` would return; no second call needed.
+- **Retrieval is hybrid:**
+  - BM25 keyword search plus vector search over
+    `BAAI/bge-small-en-v1.5` embeddings — via **fastembed**, not
+    sentence-transformers, goes over Render's free tier storage.
+  - The two legs are fused with **weighted RRF**, not a plain
+    average. BM25 and cosine similarity are different scales. Testing with equal
+    weighting let a keyword collision outrank the actually-relevant document until
+    it was reweighted toward vector. Capped at two chunks per document, so one
+    heavily-covered policy can't fill every slot.
+- **Vector store:** Chroma — small, local, rebuilt from the corpus on every
+  deploy. Not a hosted database; 106 chunks doesn't need one.
+- **Evaluation:** 27 items across all five required categories, every one run
+  against the live system before being committed, not written from intention.
+  Three separate harnesses: a pass/fail gate, full accuracy numbers, and a
+  no-LLM retrieval ablation that isolates the retriever from model behavior.
+
+> "24 of 27 fully correct. All three misses are multi-document citation cases —
+> and the ablation is what tells us which layer actually failed. Two of the three
+> had the right documents retrieved already; that's a synthesis problem, not a
+> retrieval one. And on this corpus, hybrid and vector-only score about the same
+> on ranking quality — hybrid earns its place by degrading gracefully instead of
+> failing outright when the vector index isn't available, not by ranking better
+> day to day."
 
 ---
 
@@ -160,15 +175,15 @@ error payload and the agent degrades. One sentence and move on.
 
 ## Assignments
 
-| Segment | Who | Time |
-|---|---|---|
-| Open + IDs | Chris | 0:45 |
-| Architecture | Chris | 1:30 |
-| Demo Task A | Chris | 2:00 |
-| Demo Task B + safety gate | Eric | 2:00 |
-| Deployment + CI/CD | Eric | 1:00 |
-| RAG + evaluation | Rob | 1:00 |
-| Close | Chris | 0:15 |
+| Segment                   | Who   | Time |
+| ------------------------- | ----- | ---- |
+| Open + IDs                | Chris | 0:45 |
+| Architecture              | Chris | 1:30 |
+| Demo Task A               | Chris | 2:00 |
+| Demo Task B + safety gate | Eric  | 2:00 |
+| Deployment + CI/CD        | Eric  | 1:00 |
+| RAG + evaluation          | Rob   | 1:00 |
+| Close                     | Chris | 0:15 |
 
 Eric presents Task B because he built the UI the confirmation dialog renders in.
 Rob presents evaluation because the retrieval numbers are his. Swap if anyone

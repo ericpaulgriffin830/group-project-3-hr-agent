@@ -315,7 +315,8 @@ keeps both orders visible.
 Chunking, embedding, vector store and retrieval are one pipeline
 (`app/rag/{chunk,embed,store,retrieve}.py`), and every non-obvious choice below was
 made because a simpler alternative was tried first and produced a specific,
-reproducible failure.
+reproducible failure. [`docs/RAG-PIPELINE.md`](docs/RAG-PIPELINE.md) diagrams how
+data actually moves through these files, at build time and at query time.
 
 ### Chunking: one section = one chunk, always
 
