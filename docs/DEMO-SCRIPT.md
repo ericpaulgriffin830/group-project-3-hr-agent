@@ -11,15 +11,15 @@ roughly even.
 ## Before you hit record
 
 - [ ] **Warm both services.** Free instances spin down after 15 minutes idle and
-      take ~1 minute to wake. Load the UI and run one throwaway question five
-      minutes before starting, or the first thing on camera is a loading screen.
+  take ~1 minute to wake. Load the UI and run one throwaway question five
+  minutes before starting, or the first thing on camera is a loading screen.
 - [ ] **Government ID in hand** — all three.
 - [ ] **One browser tab, UI already open**, trace panel visible.
 - [ ] **Don't hammer it during rehearsal.** A throttled call degrades *quietly* —
-      the agent falls through with less evidence and still answers. The trace panel
-      shows the guardrail step; the answer text does not. Space the retakes.
+  the agent falls through with less evidence and still answers. The trace panel
+  shows the guardrail step; the answer text does not. Space the retakes.
 - [ ] Check `/health` reads `mcp_connected: true`, `tools_discovered: 8`,
-      `index_ready: true`.
+  `index_ready: true`.
 
 ---
 
@@ -125,14 +125,15 @@ Diagram: [`docs/RAG-PIPELINE.md`](RAG-PIPELINE.md) — data flow through every
 - **Corpus:** 12 HR policy documents, 106 sections. **Chunking:** one section, one
   chunk, never split — so whatever a query hits already contains everything
   `get_policy_section` would return; no second call needed.
-- **Retrieval is hybrid:** BM25 keyword search plus vector search over
-  `BAAI/bge-small-en-v1.5` embeddings — via **fastembed**, not
-  sentence-transformers, which pulls in the full CUDA stack Render's free tier
-  can't even use. The two legs are fused with **weighted RRF**, not a plain
-  average — BM25 and cosine similarity live on different scales, and equal
-  weighting let a keyword collision outrank the actually-relevant document until
-  it was reweighted toward vector. Capped at two chunks per document, so one
-  heavily-covered policy can't fill every slot.
+- **Retrieval is hybrid:**
+  - BM25 keyword search plus vector search over
+    `BAAI/bge-small-en-v1.5` embeddings — via **fastembed**, not
+    sentence-transformers, goes over Render's free tier storage.
+  - The two legs are fused with **weighted RRF**, not a plain
+    average. BM25 and cosine similarity are different scales. Testing with equal
+    weighting let a keyword collision outrank the actually-relevant document until
+    it was reweighted toward vector. Capped at two chunks per document, so one
+    heavily-covered policy can't fill every slot.
 - **Vector store:** Chroma — small, local, rebuilt from the corpus on every
   deploy. Not a hosted database; 106 chunks doesn't need one.
 - **Evaluation:** 27 items across all five required categories, every one run
@@ -174,15 +175,15 @@ error payload and the agent degrades. One sentence and move on.
 
 ## Assignments
 
-| Segment | Who | Time |
-|---|---|---|
-| Open + IDs | Chris | 0:45 |
-| Architecture | Chris | 1:30 |
-| Demo Task A | Chris | 2:00 |
-| Demo Task B + safety gate | Eric | 2:00 |
-| Deployment + CI/CD | Eric | 1:00 |
-| RAG + evaluation | Rob | 1:00 |
-| Close | Chris | 0:15 |
+| Segment                   | Who   | Time |
+| ------------------------- | ----- | ---- |
+| Open + IDs                | Chris | 0:45 |
+| Architecture              | Chris | 1:30 |
+| Demo Task A               | Chris | 2:00 |
+| Demo Task B + safety gate | Eric  | 2:00 |
+| Deployment + CI/CD        | Eric  | 1:00 |
+| RAG + evaluation          | Rob   | 1:00 |
+| Close                     | Chris | 0:15 |
 
 Eric presents Task B because he built the UI the confirmation dialog renders in.
 Rob presents evaluation because the retrieval numbers are his. Swap if anyone
