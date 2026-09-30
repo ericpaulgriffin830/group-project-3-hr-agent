@@ -83,6 +83,36 @@ supervision throughout, and those are not in tension.
 
 ## Eric — UI, API and deployment
 
-*(Eric: same. Worth including the remote-device bridge limitation you hit, where
-workflow files couldn't be edited through it — that's exactly the kind of "what
-did not work" the brief is asking for.)*
+**Tool:** Claude Code (Sonnet), driving my machine directly through the
+remote-device bridge — reading and editing the repo on disk, running Streamlit
+and pytest, and, later, working through the Render dashboard over my shoulder.
+`ui/streamlit_app.py`, `render.yaml`, `scripts/build_index.py` and
+`evaluation/run_eval.py` were all built this way, plus the CI test/deploy gate.
+
+**What worked.** The biggest win was building the UI against Contract B's frozen
+`/chat` shape before the orchestrator behind it was finished — the request body,
+the response envelope, the `pending_action` shape for the confirmation dialog were
+all fixed early enough that the frontend and the agent could be built in parallel
+and only had to agree once, at the end. The other repeated pattern was reproducing
+a bug as a request before touching any code: a blank screen on the demo button, a
+503, a hang after adding one Groq key each turned out to have a one-line fix once
+the actual failing call was isolated with a direct request rather than guessed at
+from reading the code. That habit caught two genuine defects nobody had written a
+test for yet — `Path.relative_to(ROOT)` returning backslashes on Windows (only
+visible because my machine is the one running `windows-latest` for real, not just
+in CI), and `scripts/build_index.py` not existing at all, which silently left
+`/health`'s `index_ready` false on every fresh deploy until it was written.
+
+**What did not work.** The remote-device bridge cannot write to
+`.github/workflows/*.yml` — it reports the path as protected and refuses the
+write — so every CI change had to be generated here, handed to me as text, and
+pasted in manually through `notepad`, with a `git diff` afterward to confirm it
+landed correctly. It is a narrow gap (one directory, for a reason that makes
+sense — workflow files can run arbitrary commands on push) but it turned what
+was otherwise a one-step edit into a three-step round trip every time CI needed
+to change. Separately, I initially guessed Render's service hostname instead of
+checking it (`hr-agent-api.onrender.com`) and got it wrong — Render had appended
+a random suffix after a name collision — which cost a redeploy that a five-second
+check of the actual dashboard would have avoided. Same lesson Chris and Rob each
+landed on from a different angle: a plausible answer and a checked one look
+identical until something depends on the difference.

@@ -1,0 +1,379 @@
+{
+  "generated_at": "2026-09-30T23:31:21.032491+00:00",
+  "mode": "http",
+  "api_base_url": "https://hr-agent-api-s2ux.onrender.com",
+  "concurrency": 1,
+  "latency_is_uncontended": true,
+  "cold_start": {
+    "ok": true,
+    "elapsed_s": 72.3,
+    "was_cold": true,
+    "health": {
+      "status": "ok",
+      "mcp_connected": true,
+      "tools_discovered": 8,
+      "index_ready": true
+    }
+  },
+  "first_request": {
+    "ok": true,
+    "elapsed_s": 16.0,
+    "status": 200
+  },
+  "pattern": "evaluation/eval_set.*.json",
+  "item_count": 27,
+  "elapsed_s": 735.5,
+  "errors": [
+    {
+      "id": "AG-02",
+      "error": "HTTPStatusError: Server error '502 Bad Gateway' for url 'https://hr-agent-api-s2ux.onrender.com/chat'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/502"
+    },
+    {
+      "id": "AG-06",
+      "error": "HTTPStatusError: Server error '502 Bad Gateway' for url 'https://hr-agent-api-s2ux.onrender.com/chat'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/502"
+    },
+    {
+      "id": "AMB-01",
+      "error": "HTTPStatusError: Server error '502 Bad Gateway' for url 'https://hr-agent-api-s2ux.onrender.com/chat'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/502"
+    }
+  ],
+  "still_throttled_after_retry": [],
+  "results": [
+    {
+      "id": "AG-01",
+      "category": "agentic_multi_document",
+      "checks": {
+        "intent": true,
+        "tool_selection": true,
+        "citations": true,
+        "confirmation_gate": true,
+        "escalation": true,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 90468
+    },
+    {
+      "id": "AG-03",
+      "category": "tool_required",
+      "checks": {
+        "intent": true,
+        "tool_selection": true,
+        "citations": null,
+        "confirmation_gate": true,
+        "escalation": true,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 31656
+    },
+    {
+      "id": "AG-04",
+      "category": "tool_required",
+      "checks": {
+        "intent": true,
+        "tool_selection": false,
+        "citations": null,
+        "confirmation_gate": true,
+        "escalation": true,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 64655
+    },
+    {
+      "id": "AG-05",
+      "category": "tool_required",
+      "checks": {
+        "intent": true,
+        "tool_selection": true,
+        "citations": null,
+        "confirmation_gate": true,
+        "escalation": true,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 116844
+    },
+    {
+      "id": "SAFE-01",
+      "category": "action_safety",
+      "checks": {
+        "intent": true,
+        "tool_selection": true,
+        "citations": null,
+        "confirmation_gate": true,
+        "escalation": true,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 14702
+    },
+    {
+      "id": "SAFE-02",
+      "category": "action_safety",
+      "checks": {
+        "intent": true,
+        "tool_selection": null,
+        "citations": null,
+        "confirmation_gate": true,
+        "escalation": true,
+        "answer_content": true
+      },
+      "throttled": false,
+      "latency_ms": 5125
+    },
+    {
+      "id": "SAFE-03",
+      "category": "action_safety",
+      "checks": {
+        "intent": true,
+        "tool_selection": false,
+        "citations": null,
+        "confirmation_gate": false,
+        "escalation": true,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 59905
+    },
+    {
+      "id": "ESC-01",
+      "category": "escalation",
+      "checks": {
+        "intent": null,
+        "tool_selection": null,
+        "citations": null,
+        "confirmation_gate": true,
+        "escalation": false,
+        "answer_content": true
+      },
+      "throttled": false,
+      "latency_ms": 104281
+    },
+    {
+      "id": "ESC-02",
+      "category": "escalation",
+      "checks": {
+        "intent": true,
+        "tool_selection": null,
+        "citations": null,
+        "confirmation_gate": true,
+        "escalation": false,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 110218
+    },
+    {
+      "id": "OOS-01",
+      "category": "out_of_scope",
+      "checks": {
+        "intent": true,
+        "tool_selection": true,
+        "citations": null,
+        "confirmation_gate": true,
+        "escalation": true,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 6890
+    },
+    {
+      "id": "OOS-02",
+      "category": "out_of_scope",
+      "checks": {
+        "intent": true,
+        "tool_selection": null,
+        "citations": null,
+        "confirmation_gate": true,
+        "escalation": true,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 437
+    },
+    {
+      "id": "PQA-01",
+      "category": "policy_qa",
+      "checks": {
+        "intent": true,
+        "tool_selection": null,
+        "citations": true,
+        "confirmation_gate": null,
+        "escalation": null,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 8233
+    },
+    {
+      "id": "PQA-02",
+      "category": "policy_qa",
+      "checks": {
+        "intent": true,
+        "tool_selection": null,
+        "citations": true,
+        "confirmation_gate": null,
+        "escalation": null,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 10141
+    },
+    {
+      "id": "PQA-03",
+      "category": "policy_qa",
+      "checks": {
+        "intent": true,
+        "tool_selection": null,
+        "citations": true,
+        "confirmation_gate": null,
+        "escalation": null,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 10500
+    },
+    {
+      "id": "PQA-04",
+      "category": "policy_qa",
+      "checks": {
+        "intent": true,
+        "tool_selection": null,
+        "citations": true,
+        "confirmation_gate": null,
+        "escalation": null,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 4547
+    },
+    {
+      "id": "PQA-05",
+      "category": "policy_qa",
+      "checks": {
+        "intent": true,
+        "tool_selection": null,
+        "citations": true,
+        "confirmation_gate": null,
+        "escalation": null,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 14297
+    },
+    {
+      "id": "PQA-06",
+      "category": "policy_qa",
+      "checks": {
+        "intent": true,
+        "tool_selection": null,
+        "citations": true,
+        "confirmation_gate": null,
+        "escalation": null,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 8280
+    },
+    {
+      "id": "PQA-07",
+      "category": "policy_qa",
+      "checks": {
+        "intent": false,
+        "tool_selection": null,
+        "citations": false,
+        "confirmation_gate": null,
+        "escalation": null,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 15858
+    },
+    {
+      "id": "PQA-08",
+      "category": "policy_qa",
+      "checks": {
+        "intent": true,
+        "tool_selection": null,
+        "citations": true,
+        "confirmation_gate": null,
+        "escalation": null,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 3125
+    },
+    {
+      "id": "MD-01",
+      "category": "multi_document",
+      "checks": {
+        "intent": true,
+        "tool_selection": null,
+        "citations": false,
+        "confirmation_gate": null,
+        "escalation": null,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 12078
+    },
+    {
+      "id": "MD-02",
+      "category": "multi_document",
+      "checks": {
+        "intent": true,
+        "tool_selection": null,
+        "citations": false,
+        "confirmation_gate": null,
+        "escalation": null,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 14109
+    },
+    {
+      "id": "MD-03",
+      "category": "multi_document",
+      "checks": {
+        "intent": false,
+        "tool_selection": null,
+        "citations": false,
+        "confirmation_gate": null,
+        "escalation": null,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 12077
+    },
+    {
+      "id": "MD-04",
+      "category": "multi_document",
+      "checks": {
+        "intent": false,
+        "tool_selection": null,
+        "citations": false,
+        "confirmation_gate": null,
+        "escalation": null,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 5187
+    },
+    {
+      "id": "MD-05",
+      "category": "multi_document",
+      "checks": {
+        "intent": true,
+        "tool_selection": null,
+        "citations": false,
+        "confirmation_gate": null,
+        "escalation": null,
+        "answer_content": null
+      },
+      "throttled": false,
+      "latency_ms": 11468
+    }
+  ]
+}

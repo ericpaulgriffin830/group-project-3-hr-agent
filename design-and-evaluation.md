@@ -478,10 +478,78 @@ real BM25 score off one incidental match in a corpus this small (106
 chunks), so not every off-topic query is caught. Narrowing that further needs
 its own tuning pass against the corpus, not a quick constant change.
 
-## 8. Deployment *(Eric — to come)*
+## 8. Deployment *(Eric)*
 
-Render topology, free-tier constraints, cold-start behaviour, CI/CD gating.
-Measurements available in [`docs/DEPLOYMENT-NOTES.md`](docs/DEPLOYMENT-NOTES.md).
+Render Blueprint, two free Web Services, defined in `render.yaml` and deployed
+from the group repo. Full URLs, the health-check payload and reproduction steps
+are in [`deployed.md`](deployed.md); this section covers the topology and the
+constraints it was built under.
+
+**Topology.** One API service holds the web API, the agent orchestrator, the MCP
+server (in-process over `stdio`), the Chroma index and the mock HR data — the
+free-tier shape the brief recommends, rather than splitting MCP into its own
+service. A second service serves the Streamlit UI and talks to the API over
+`API_BASE_URL`, an env var rather than a hardcoded host, because Render assigns
+each service's hostname at creation time (`hr-agent-api-s2ux.onrender.com`, not
+the bare name, which collided with an unrelated service). `MCP_TRANSPORT` selects
+`stdio` (default, in-process) or `streamable-http` if the MCP server is ever
+pulled into its own service; nothing else in the codebase branches on transport.
+
+**Build-time index.** The Chroma index is not committed — it is built during
+`buildCommand`:
+
+```yaml
+buildCommand: "pip install uv && uv sync --locked && uv run python -m scripts.build_index"
+```
+
+so the deployed service always indexes exactly the corpus that shipped with that
+commit, at the cost of a few extra minutes on every deploy. `scripts/build_index.py`
+did not exist until late in the build — `app/rag/store.py`'s own docstring
+referenced it, and its absence was the reason `/health`'s `index_ready` field could
+never turn `true` on a fresh deploy.
+
+**Free-tier constraints.** Both services run on Render's free instance type — 512
+MB RAM, 0.1 CPU — with effects worth stating explicitly rather than leaving
+implicit in a config file:
+
+- **750 instance-hours per month are shared across the whole Render workspace**,
+  not allocated per service, so the two services draw on one pool.
+- **Free instances spin down after 15 minutes idle** and take roughly a minute to
+  wake. The first request after idle hits a Render loading page, not a failure;
+  §9.4 reports the wake cost and the first-question cost separately, because they
+  are two different costs measured against the deployed URL.
+- Groq's free tier is 200,000 tokens/day per account; the app rotates across
+  three teammates' keys (`GROQ_API_KEY`, `_2`, `_3`) so a single heavy session —
+  a recording, a full eval run — does not exhaust one account's budget mid-task.
+  With only one key configured, a 429 has no fallback to fail over to and just
+  serialises behind the SDK's own retry backoff, which is what looked like a
+  hang in early local testing before the second and third keys were added.
+
+**CI/CD gating.** Push to `main` runs the test suite across the `windows-latest`,
+`macos-latest` and `ubuntu-latest` matrix; the deploy job runs only if that job
+succeeds:
+
+```yaml
+deploy:
+  needs: test
+  if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+```
+
+and, on success, triggers each service's Render deploy hook by URL, stored as
+repository secrets (`RENDER_DEPLOY_HOOK_API`, `RENDER_DEPLOY_HOOK_UI`) rather than
+plain env vars, since a deploy hook URL is itself a bearer credential. Auto-deploy
+is switched off on the Render side, so this workflow is the only path to
+production — a red build cannot reach the deployed URL. Verified rather than
+assumed: both hooks returned real Render deploy ids
+(`dep-dassk33bc2fs73a6au80`, `dep-dassk33bc2fs73a6av8g`) rather than the
+empty-string response a missing secret would post to.
+
+**Known limitations.** No persistent disk — a mock ticket created through
+`create_mock_hr_ticket` does not survive a restart, which is acceptable because
+the brief requires these actions be mock or confirmed and they are both. The
+index rebuild adds deploy latency but nothing else; cold start, described above
+and measured in §9.4, is the one behaviour a grader will actually see if the app
+has been idle.
 
 ## 9. Evaluation results *(Chris)*
 
